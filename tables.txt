@@ -1,0 +1,64 @@
+1. ARTISTS(*ArtistID, CurrentAgentID, Email, FirstName, LastName, Gender, Birthday, Tel, Address, PostalCode, Awards, Reviews, EventParticipated, Date)
+EX:
+| ArtistID | LasName |
+|----------|---------|
+| 1        | TOTO    |
+| 2        | LULU    |
+
+2. SKILLS(*SkillID, sillName, skillType) 
+EX: 
+| skillID | skillName   | skillType  |
+|---------|-------------|------------|
+| 1       | ANGLAIS     | LANGUE     |
+| 2       | SAXO        | INSTRUMENT |
+| 3       | Musicien    | METIER     |
+| 4       | Réalisateur | METIER     |
+
+3. KNOWS(*ArtistID, *SkillID)
+EX: Une ligne = un skill pour une personne
+CONTRAINTE: 
+| ArtistID | SkillID |
+|----------|---------|
+| 1        | 2       |
+| 1        | 4       |
+| 2        | 2       |
+| 2        | 3       |
+
+4. Trainings()
+EX:
+| ArtistID | TrainingName | TrainingCenter | TrainingStart |
+|----------|--------------|----------------|---------------|
+| 1        | Realisateur  | Paris          | 2021-01-15    |
+| 2        | Realisateur  | Paris          | 2021-01-15    |
+| 1        | Author       | London         | 2020-02-15    |
+
+5. Creations()
+EX:
+| CreationID | CreationName | CreationType |     Date    |
+|------------|--------------|--------------|-------------|
+| 1          | OneRepublic  | Album        |  1998-06-25 |
+| 2          | One Day      | Movie        |  2021-10-21 |
+| 3          | Bonjour      | Play         |  2023-03-21 |
+
+6. Paritipate()
+EX:
+| ArtistID | CreationID | Role         |
+|----------|------------|--------------|
+| 1        | 1          | Singer       |
+| 2        | 2          | Director     |
+| 1        | 3          | DirectorPlay |
+
+7. Demandes()
+EX:
+| DemandeID | CreationID |   ArtistIDFinal  | Buget | Status |
+|-----------|------------|------------------|-------|--------|
+| 1         | 2          | NULL             | 5000  | Open   |
+| 1         | 1          | 2                | 1000  | Close  |
+| 2         | 3          | NULL             | 2000  | Open   |
+
+8. MultipleSkills(*DemandeID, *SkillID)
+| DemandeID | SkillID |
+|-----------|---------|
+| 1         | 2       |
+| 1         | 1       |
+| 2         | 3       |

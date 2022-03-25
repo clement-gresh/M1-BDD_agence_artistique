@@ -5,7 +5,7 @@ EX:
 | 1        | TOTO    |
 | 2        | LULU    |
 
-2. SKILLS(*SkillID, sillName, skillType) 
+2. SKILLS(*skillID, skillName, skillType) 
 EX: 
 | skillID | skillName   | skillType  |
 |---------|-------------|------------|
@@ -16,7 +16,6 @@ EX:
 
 3. KNOWS(*ArtistID, *SkillID)
 EX: Une ligne = un skill pour une personne
-CONTRAINTE: 
 | ArtistID | SkillID |
 |----------|---------|
 | 1        | 2       |
@@ -24,7 +23,7 @@ CONTRAINTE:
 | 2        | 2       |
 | 2        | 3       |
 
-4. Trainings()
+4. Trainings(*#ArtistID, *TrainingName, TrainingCenter, PostalCode, TrainingStart, TrainingEnd, Diploma)
 EX:
 | ArtistID | TrainingName | TrainingCenter | TrainingStart |
 |----------|--------------|----------------|---------------|
@@ -32,7 +31,7 @@ EX:
 | 2        | Realisateur  | Paris          | 2021-01-15    |
 | 1        | Author       | London         | 2020-02-15    |
 
-5. Creations()
+5. Creations(CreationID, CreationName, CreationType, Date)
 EX:
 | CreationID | CreationName | CreationType |     Date    |
 |------------|--------------|--------------|-------------|
@@ -40,7 +39,7 @@ EX:
 | 2          | One Day      | Movie        |  2021-10-21 |
 | 3          | Bonjour      | Play         |  2023-03-21 |
 
-6. Paritipate()
+6. Paritipate(*#ArtistID, *#CreationID, Role)
 EX:
 | ArtistID | CreationID | Role         |
 |----------|------------|--------------|
@@ -48,17 +47,63 @@ EX:
 | 2        | 2          | Director     |
 | 1        | 3          | DirectorPlay |
 
-7. Demandes()
+7. Demandes(*DemandeID, #CreationID, Budget, ArtistIDFinal, Status, DemandeStart, DemandeEnd)
 EX:
-| DemandeID | CreationID |   ArtistIDFinal  | Buget | Status |
+| DemandeID | CreationID |   ArtistIDFinal  | Budget | Status |
 |-----------|------------|------------------|-------|--------|
 | 1         | 2          | NULL             | 5000  | Open   |
 | 1         | 1          | 2                | 1000  | Close  |
 | 2         | 3          | NULL             | 2000  | Open   |
 
-8. MultipleSkills(*DemandeID, *SkillID)
-| DemandeID | SkillID |
+8. Propose(*DemandeID, *ArtistID, Status)
+| DemandeID | ArtistID | Status  |
+|-----------|----------|---------|
+| 1         | 1        | REFUSE  |
+| 2         | 2        | CASTING |
+
+9. MultipleSkills(*DemandeID, *skillID)
+| DemandeID | skillID |
 |-----------|---------|
 | 1         | 2       |
 | 1         | 1       |
 | 2         | 3       |
+
+10. HistoryRepresented(*ArtistID, *AgentID, *DateStart, DateEnd)
+EX:
+| ArtistID | AgentID | DateStart  | DateEnd    |
+|----------|---------|------------|------------|
+| 1        | 1       | 2022-01-05 | NULL       |
+| 2        | 1       | 2021-02-20 | 2022-02-20 |
+
+11. Agent(*AgentID, #ContratAPID, E-mail, Firstname, Lastname, Gender, Birthday, Tel, Address, PostalCode)
+EX:
+| AgentID | Firstname | Lastname | Gender | Birthday   | Email   | Tel        | Address            | PostalCode |  ContratAPID |
+|---------|-----------|----------|--------|------------|---------|------------|--------------------|------------|--------------|
+| 1       | AAA       | AA       | F      | 1977-01-01 | xxx@xxx | 0112345678 | 100 Rue ABC, Paris | 75001      | 1            |
+| 2       | BBB       | BB       | H      | 1988-01-02 | yyy@yyy | 0678945612 | 50 Rue XYZ, Paris  | 75002      | 2            | 
+
+12. ExternalContact(* ExternatID, E-mail, Type, Enterprise_Name, Firstname, Lastname, Tel)
+| ExternatID | Type     | Enterprise_Name | Firstname | Lastname | Email   | Tel        |
+|------------|----------|-----------------|-----------|----------|---------|------------|
+| 1          | STUDIO   | SkyStudio       | FFF       | UUU      | ttt@ttt | 0201236984 |
+| 2          | PRODUCER |                 | DDD       | TTT      | bbb@bbb | 0609145889 |
+
+13. Contact(*#AgentID, *#ExternalID, ArtistID)
+| AgentID | ExternatID | ArtistID |
+|---------|------------|----------|
+| 1       | 1          | 1        |
+| 2       | 2          | 2        |
+
+14. ContratArtPro(*ArtistID, *ContratAPID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))
+| ArtistID | ContratAPID | DateStart  | DateEnd    | Remuneration | NumberPaiement | Avenant | Participation(%) |
+|----------|-------------|------------|------------|--------------|----------------|---------|------------------|
+| 1        | 1           | 2023-01-01 | 2030-12-31 | 100M         | 10             |         | 0.05%            |
+| 2        | 3           | 2021-01-01 | 2023-12-31 | 500M         | 10             |         | 0.1%             |
+
+15. ContratArtAg(*ArtistID, *AgentID, *ContratAAID, CompID, DateStart, DateEnd, PercentageTaken)
+| ArtistID | AgentID | ContratAAID | DateStart  | DateEnd    | PercentageTaken | CompID |
+|----------|---------|-------------|------------|------------|-----------------|--------|
+| 1        | 1       | 1           | 2023-01-01 | 2030-12-31 | 10%             | 1      |
+| 2        | 1       | 2           | 2021-01-01 | 2023-12-31 | 8%              | 2      |
+
+16. Comptabilité(*CompID, #ArtistID, #ContratAAID, #ContratAPID, Amount, Status, Date, Frais, Commission, Honoraires)

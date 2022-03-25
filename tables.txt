@@ -1,9 +1,11 @@
-1. ARTISTS(*ArtistID, CurrentAgentID, Email, FirstName, LastName, Gender, Birthday, Tel, Address, PostalCode, Awards, Reviews, EventParticipated, Date)
+1. CONTACTS(*ArtistID, CurrentAgentID, Email, Societe, FirstName, LastName, Gender, Birthday, Tel, Address, PostalCode, Awards, Reviews, EventParticipated, Date)
 EX:
 | ArtistID | LasName |
 |----------|---------|
 | 1        | TOTO    |
 | 2        | LULU    |
+Societe = Nom de Agency si les artists sont represents par l'agent d'Agency
+Sinon, c'est des personnes externs=Produceur/Studion
 
 2. SKILLS(*skillID, skillName, skillType) 
 EX: 
@@ -30,6 +32,9 @@ EX:
 | 1        | Realisateur  | Paris          | 2021-01-15    |
 | 2        | Realisateur  | Paris          | 2021-01-15    |
 | 1        | Author       | London         | 2020-02-15    |
+Contraintes : Societe
+Trigger avant insert into Trainings : on verifie si dans la tab CONTACTS pour artID, Societe = agency
+Sinon, on refuse l'insertion
 
 5. Creations(CreationID, CreationName, CreationType, Date)
 EX:
@@ -38,6 +43,7 @@ EX:
 | 1          | OneRepublic  | Album        |  1998-06-25 |
 | 2          | One Day      | Movie        |  2021-10-21 |
 | 3          | Bonjour      | Play         |  2023-03-21 |
+Quand le projet termine, ajoute la projet a la table : alert
 
 6. Paritipate(*#ArtistID, *#CreationID, Role)
 EX:
@@ -47,19 +53,21 @@ EX:
 | 2        | 2          | Director     |
 | 1        | 3          | DirectorPlay |
 
-7. Demandes(*DemandeID, #CreationID, Budget, ArtistIDFinal, Status, DemandeStart, DemandeEnd)
+7. Demandes(*DemandeID, RoleSearched, Description, Budget, ArtistIDFinal, Status, DemandStart, DemandEnd)
 EX:
-| DemandeID | CreationID |   ArtistIDFinal  | Budget | Status |
+| DemandeID | RoleSearched |   ArtistIDFinal  | Budget | Status |
 |-----------|------------|------------------|-------|--------|
-| 1         | 2          | NULL             | 5000  | Open   |
+| 1         | Comd        | NULL             | 5000  | Open   |
 | 1         | 1          | 2                | 1000  | Close  |
 | 2         | 3          | NULL             | 2000  | Open   |
 
-8. Propose(*DemandeID, *ArtistID, Status)
+8. Propose(*DemandeID, *ArtistID, Status, DateProposed)
 | DemandeID | ArtistID | Status  |
 |-----------|----------|---------|
 | 1         | 1        | REFUSE  |
 | 2         | 2        | CASTING |
+Quand la Status=accpeted, on met a jour Demandes[ArtistIDFinal]
+Contrinate : DemandStart=<DateProposed<=DemandEnd
 
 9. MultipleSkills(*DemandeID, *skillID)
 | DemandeID | skillID |
@@ -68,42 +76,44 @@ EX:
 | 1         | 1       |
 | 2         | 3       |
 
-10. HistoryRepresented(*ArtistID, *AgentID, *DateStart, DateEnd)
-EX:
-| ArtistID | AgentID | DateStart  | DateEnd    |
-|----------|---------|------------|------------|
-| 1        | 1       | 2022-01-05 | NULL       |
-| 2        | 1       | 2021-02-20 | 2022-02-20 |
 
-11. Agent(*AgentID, #ContratAPID, E-mail, Firstname, Lastname, Gender, Birthday, Tel, Address, PostalCode)
-EX:
-| AgentID | Firstname | Lastname | Gender | Birthday   | Email   | Tel        | Address            | PostalCode |  ContratAPID |
-|---------|-----------|----------|--------|------------|---------|------------|--------------------|------------|--------------|
-| 1       | AAA       | AA       | F      | 1977-01-01 | xxx@xxx | 0112345678 | 100 Rue ABC, Paris | 75001      | 1            |
-| 2       | BBB       | BB       | H      | 1988-01-02 | yyy@yyy | 0678945612 | 50 Rue XYZ, Paris  | 75002      | 2            | 
-
-12. ExternalContact(* ExternatID, E-mail, Type, Enterprise_Name, Firstname, Lastname, Tel)
-| ExternatID | Type     | Enterprise_Name | Firstname | Lastname | Email   | Tel        |
-|------------|----------|-----------------|-----------|----------|---------|------------|
-| 1          | STUDIO   | SkyStudio       | FFF       | UUU      | ttt@ttt | 0201236984 |
-| 2          | PRODUCER |                 | DDD       | TTT      | bbb@bbb | 0609145889 |
-
-13. Contact(*#AgentID, *#ExternalID, ArtistID)
-| AgentID | ExternatID | ArtistID |
-|---------|------------|----------|
-| 1       | 1          | 1        |
-| 2       | 2          | 2        |
-
-14. ContratArtPro(*ArtistID, *ContratAPID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))
-| ArtistID | ContratAPID | DateStart  | DateEnd    | Remuneration | NumberPaiement | Avenant | Participation(%) |
-|----------|-------------|------------|------------|--------------|----------------|---------|------------------|
-| 1        | 1           | 2023-01-01 | 2030-12-31 | 100M         | 10             |         | 0.05%            |
-| 2        | 3           | 2021-01-01 | 2023-12-31 | 500M         | 10             |         | 0.1%             |
-
-15. ContratArtAg(*ArtistID, *AgentID, *ContratAAID, CompID, DateStart, DateEnd, PercentageTaken)
+???10. ContratArtAg( *ContratAAID, #ArtistID, #AgentID, CompID, DateStart, DateEnd, PercentageTaken)
 | ArtistID | AgentID | ContratAAID | DateStart  | DateEnd    | PercentageTaken | CompID |
 |----------|---------|-------------|------------|------------|-----------------|--------|
 | 1        | 1       | 1           | 2023-01-01 | 2030-12-31 | 10%             | 1      |
 | 2        | 1       | 2           | 2021-01-01 | 2023-12-31 | 8%              | 2      |
+Gerer historique (DateEnd != NULL)
 
-16. Comptabilité(*CompID, #ArtistID, #ContratAAID, #ContratAPID, Amount, Status, Date, Frais, Commission, Honoraires)
+
+11. Agent(*AgentID, E-mail, Firstname, Lastname, Gender, Birthday, Tel, Address, PostalCode)
+EX:
+| AgentID | Firstname | Lastname | Gender | Birthday   | Email   | Tel        | Address            | PostalCode | 
+|---------|-----------|----------|--------|------------|---------|------------|--------------------|------------|-
+| 1       | AAA       | AA       | F      | 1977-01-01 | xxx@xxx | 0112345678 | 100 Rue ABC, Paris | 75001      | 1            |
+| 2       | BBB       | BB       | H      | 1988-01-02 | yyy@yyy | 0678945612 | 50 Rue XYZ, Paris  | 75002      | 2            | 
+
+????12 Relation(*RelationID, #AgentID, #ContactID, #ContactID, DateMiseEnRelation)?????
+EX:
+|*RelationID | AgentID   | ContactID  | ContactID | DateMiseEnRelation
+|------------|-----------|------------|-----------|-----------------------|
+|           1| 1         | 2          | 5         | 1977-01-01
+|           2| 2         | 3          | 5         | 1977-01-01
+|           3| 3         | 4          | 8         | 1977-01-01
+UNIQUE(AgentID,ContactID,ContactID)
+
+
+13. ContratArtPro(#ArtistID, #ProducerID, *ContratAPID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))????
+| ArtistID | ContratAPID | DateStart  | DateEnd    | Remuneration | NumberPaiement | Avenant | Participation(%) |
+|----------|-------------|------------|------------|--------------|----------------|---------|------------------|
+| 1        | 1           | 2023-01-01 | 2030-12-31 | 100M         | 10             |         | 0.05%            |
+| 2        | 3           | 2021-01-01 | 2023-12-31 | 500M         | 10             |         | 0.1%             |
+Avenant String : qui a ete changé dans la contract
+
+
+14. Comptabilité(*CompID, #ArtistID, #ContactID, #ContratAAID, #ContratAPID, AmountPaid, DatePaid, Frais, Commission, Honoraires)
+artistID, contactID et contractAPID sont redondants. Mais cela permet d'eviter de faire une jointure lorsque l'on veut avoir tous les
+montants verses a un artiste (ce qui peut arriver souvent)
+artistID et contractAAID est aussi redondant.
+
+CHECK ContratAAID IS NULL IF ContratAPID IS NOT NULL
+CHECK ContratAPID IS NULL IF ContratAAID IS NOT NULL

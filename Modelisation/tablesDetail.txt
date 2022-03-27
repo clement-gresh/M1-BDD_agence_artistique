@@ -1,0 +1,47 @@
+1. CONTACTS(*ContactID,Email, Societe, FirstName, LastName, Gender, Birthday, Tel, Address, PostalCode, Awards, Reviews, EventParticipated, Date)
+Contraintes : 
+Societe = Nom de Agency si les artists sont represents par l'agent d'Agency
+Sinon, c'est des personnes externs=Produceur/Studion
+
+2. SKILLS(*skillID, skillName, skillType) 
+
+3. KNOWS(*ArtistID, *SkillID)
+Une ligne = un skill pour une personne
+
+4. Trainings(*#ArtistID, *TrainingName, TrainingCenter, PostalCode, TrainingStart, TrainingEnd, Diploma)
+Contraintes : Societe
+Trigger avant insert into Trainings : on verifie si dans la tab CONTACTS pour artID, Societe = agency
+Sinon, on refuse l'insertion
+
+5. Creations(CreationID, CreationName, CreationType, Date)
+Quand le projet termine, ajoute la projet a la table : alert
+
+6. Paritipate(*#ArtistID, *#CreationID, Role)
+
+7. Demands(*DemandID, *#ContactID(Createur), RoleSearched, Description, Budget, ArtistIDFinal, Status, DemandStart, DemandEnd)
+
+8. Proposition(*#ContactID, *#AgentID, *#DemandID, Status, DateProposed)
+Quand la Status=accpeted, on met a jour Demandes[ArtistIDFinal]
+Contrinate : DemandStart=<DateProposed<=DemandEnd
+
+9. MultipleSkills(*DemandeID, *skillID)
+
+10. ContratContactAgency( *ContratCAID, #ContactID, #CompID, DateStart, DateEnd, PercentageTaken)
+
+11. Agent(*AgentID, E-mail, Firstname, Lastname, Gender, Birthday, Tel, Address, PostalCode)
+
+12. HistoryRepresent(*#ContactID, *#AgentID, DateStart, DateEnd)
+
+13. ContratArtPro( *ContratAPID,#RelationID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))
+Lors de la creation d'un contratpro , on insert directement une ou plusieurs lignes de paiement dans la compta.
+Si un contrat pro necessite 10 payements , on a 10 lignes dans la compta en status TODO
+
+14. Comptabilité(*CompID, #ContactID, #ContratCAID, #ContratAPID, Amount, Status, Date, RémunerationArtiste, CommissionAgence)
+
+TRIGGER : AFTER insert/update 
+calcul automatique de la comission+ remunerationArtiste , en fonction de Amount et du  PercentageTaken du ContratContactAgency 
+
+Gestion : 
+Detection des contrats ToDo ayant une date de paiement passée
+Calcul benecice de l'agence sur les contrats , il est facile de calculer mensuellement
+Si on a les salaires des agents dans la table agent, on peut calculer le benefice total de l'agence

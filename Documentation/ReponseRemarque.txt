@@ -1,0 +1,139 @@
+Bases de Données Avancées
+
+
+
+
+TABLES
+
+Que sont FK et PK ?
+
+Est-ce problématique d'avoir une table où des infos se répètent ?
+--> Globalement oui, plus précise
+
+Une solution simple est de ne pas répéter les info et de faire une table pour faire la jointure
+Par exemple des tables : skills, artists, et une table de jointure entre les 2
+--> Par exdemple : Table KNOWS
+
+Faut il justifier que notre schéma est FNBC ou 3NF ou 4NF ?
+
+Si on a une relation faible, cela veut-il forcément dire que l’ID de la table forte fait partie de la clé primaire de la table faible ? 
+Ou bien cela peut juste être un champs comme un autre ?
+--> Même queation à poser au prof
+
+Pourquoi mettre dans la modélisation des commentaires avec « la table … contient les champs ... » ? Car cela triple le travail (on met les noms des champs dans la modélisation, les commentaire, et le document tableDetails.txt)
+
+Demands :
+	•	Est-ce qu’il ne vaudrait pas mieux mettre CreationID que CreationName ? Je n’arrive pas à me décider.
+	•	Est ce qu’il faut indiquer le champs CreationID dans la modélisation ou bien est-ce sous entendu par le lien entre la table Demand et la table Creations ?
+
+De Proposition à ContratArtProd, est-ce que ça ne devrait pas être 0-1 (au lieu de 0-n) ? Car une proposition ne peut donner qu’un contrat au plus.
+
+ContratArtProd :
+	•	Est ce qu’on ne devrait pas ajouter des champs pour l’id de l’artiste, l’id du producteur, l’id de la creation et l’id de la demande (ou de la proposition) ?
+
+Comptabilite :
+	•	Est-ce qu’il ne faut pas faire apparaître dans la modélisation le lien entre la table Comptabilite et les tables ContractArtAgency et ContractArtProd ?
+	•	Est ce qu’il ne serait pas préférable de remplacer ContratAAID par PercentageCommissionAgency ? Car c’est la seule info du contrat dont on ait besoin, il n’y a pas vraiment besoin du reste.
+
+Creations :
+	•	Ajout de Producer
+        --> A Discuter
+	•	Enlever profits
+        --> Non, on en a besoin avec le contractProfessional pour generer une nouvelle ligen dans la table comptabilite
+Demands :
+	•	Enlever ArtistIdFinal (répétition avec info dans Proposition)
+		--> OK
+
+	•	Enlever CreationID dans le schéma (pas dans la table), car il apparaît déjà via le lien avec la table CREATIONS
+		--> ?
+
+Proposition : AgentId ne me paraît pas utile
+--> Ca peut etre utile par exemple on peut garder la trace d'un artiste, sa performence etc
+
+
+
+CONTACTS
+On fusionne les tables artists et contacts. On ajoute un champs societe indiquant à quelle société la personne appartient. Ce champs doit valoir « agency » dans le cas des artistes (représentés par l'agence).
+
+awards, review, festivals sont des zones de texte avec toutes les info dedans (dates, nom, etc.). Cela permet de ne pas multiplier le nombre de tables. Seul le champs festivals ne semble pas utile pour les contacts extérieurs à l’agence. awards permet d’indiquer si cette personne a déjà reçu des récompenses et review de mettre les feedbacks des précédentes coopérations avec elle.
+
+
+
+TRAININGS
+Si un artiste a suivi plusieurs formations, elles seront toutes listées dans la table trainings.
+
+Les informations se répètent si 2 artistes ont la même formation. Mais il y a peu d'informations donc ce n'est pas très grave.
+
+Cela permet en revanche de ne pas avoir à faire une table supplémentaire pour lier artistes et trainings.
+
+
+
+Creations
+Ŕealisations precedentes : films realises, pieces de theatre ou spectacles mis en scene, roles joues dans les films et au theatre, les albums (pour les musiciens)
+
+Pour un film dans lequel a joué une actrice de l'agence, il serait intéressant d'indiquer dans les infos du film qui en est la réalistrice. Mais pas pour un film qui a été dirigé par une réalisatrice de l'agence. Comment faire ? Simplement ne pas indiquer la réalisatrice ?
+
+
+HISTORY
+La table history permet d’indiquer l’historique des agents ayant représenté un artiste. Cela aurait pu également se faire par le biais d’une table contractAA entre un agent et un artiste mais les contrats passés sont entre les artistes et l’agence elle-même (et non un agent particulier).
+
+
+
+ContractAP
+Il n’y a pas de lien direct entre l'agent et le contrat passé entre un artiste et un producteur. En effet, les agents n'ont pas d'intéressement, c'est l’agence qui est payée directement. Si on a besoin de connaître l'agent, on peut faire une jointure avec la table history ce qui est plus coûteux mais devrait rarement arriver.
+
+Que met on dans le champ Avenant ?
+Du texte décrivant les modifications ? Dans ce cas là, une proposition est liée à 0-1 contrat (au lieu de 0-n)
+
+Pour retrouver toutes les info (nom de l’artiste, nom du producteur, nom de la piece, etc.), il faut faire au moins 4 jointures. Est ce qu’il ne serait pas préférable de découpler ContractAP et Proposition et d’indiquer dans ContractAP les infos nécessaires (artistID, producerID, CreationID…) ?
+
+
+
+Demands
+Faut-il lier chaque entrée de la table demand à une entrée de la table creation ?
+Cela permet de lier plusieurs demandes liées à une même creation entre elles
+Mais peut nécessiter de créer une "création" bien qu'on n'ai pas encore le titre et les autres infos.
+
+
+Comptabilite
+La table comptabilite a un champs statut. Cela permet d’indiquer les versements prévus lors de la signature du contrat (statut « pending »), puis ce qui a réellement été payé (status « done »), quitte à apporter des modifications aux montants et dates.
+Il serait possible d’arguer que les dates prévus pour les paiements devraient être indiqués dans une table à part, tandis que la table comptabilite ne devrait contenir que les paiements effectivement effectués. Nous préférons cependant éviter cette solution afin de limiter le nombre de tables.
+
+Nous avons opté pour la création d’une seule table plutôt que d’avoir une table pour la comptabilité des artistes et une pour celle de l’agence. A partir du montant versé, on déduit la part de l'agence ainsi que celle de l'artiste en fonction du pourcentage prévu dans le contrat correspondant.
+C’est une simplification de la modélisation par rapport à la réalité où les versements sur les comptes bancaires de l'agence et de l’artiste ne sont probablement pas faits au même moment.
+
+Le pourcentage prélevé par l’agence apparaît dans deux tables différentes : contractAA et comptabilite  (redondance). Cependant le champs dans la table comptabilite est automatiquement rempli par un trigger. Et si le pourcentage est modifié dans le contrat entre l’agence et l’artiste, il semble peu probable qu’il change aussi rétroactivement dans les contrats déjà passés entre l’artiste et des producteurs (et donc dans la table comptabilite). Il n’y a donc pas de problème de mise à jour.
+Le montant versé à l’artiste et celui versé à l’agence est calculé grâce à un trigger qui récupère le pourcentage de commission de l’agence dans le contrat entre artiste et agence.
+
+
+Constantes de classe
+
+
+
+
+
+
+
+
+
+
+PORTES
+Classe Gate
+
+
+Entrées / Sorties
+
+
+
+Portes logiques
+
+
+Constantes de classe
+
+
+
+
+
+
+
+

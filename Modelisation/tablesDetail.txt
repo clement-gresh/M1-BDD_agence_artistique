@@ -1,9 +1,9 @@
-1. CONTACTS(*ContactID,Email, Societe, FirstName, LastName, Gender, Birthday, Tel, Address, PostalCode, Awards, Reviews, EventParticipated, Date)
+1. CONTACTS(*ContactID,Email, Societe, FirstName, LastName, Gender, BirthDate, Tel, Address, PostalCode, Awards, Reviews, EventParticipated)
 Contraintes : 
-Societe = Nom de Agency si les artists sont represents par l'agent d'Agency
-Sinon, c'est des personnes externs=Produceur/Studion
+Societe = Agency si les artists sont represents par l'agence
+Sinon, ce sont des personnes externes (Producteur/Studio)
 
-2. SKILLS(*skillID, skillName, skillType) 
+2. SKILLS(*skillID, skillName, skillType)
 
 3. KNOWS(*ArtistID, *SkillID)
 Une ligne = un skill pour une personne
@@ -13,30 +13,39 @@ Contraintes : Societe
 Trigger avant insert into Trainings : on verifie si dans la tab CONTACTS pour artID, Societe = agency
 Sinon, on refuse l'insertion
 
-5. Creations(CreationID, CreationName, CreationType, Date)
+5. Creations(CreationID, CreationName, CreationType, Date, Producer)
 Quand le projet termine, ajoute la projet a la table : alert
+CreationType : album, song, play, movie, TV show, concert
 
-6. Paritipate(*#ArtistID, *#CreationID, Role)
+6. Participate(*#ArtistID, *#CreationID, *Role)
+An artist can be both a writer and a comedian for instance
+Role : writer, producer, singer, musician, comedian, metteur en scene...
+Contrainte : le role doit faire partie des competences de l'artiste (dans la table KNOWS)
 
-7. Demands(*DemandID, *#ContactID(Createur), RoleSearched, Description, Budget, ArtistIDFinal, Status, DemandStart, DemandEnd)
+7. Demands(*DemandID, *#ContactID(Createur), #CreationID, RoleSearched, CreationName Description, Budget, Status, DemandStart, DemandEnd)
+Role : cf list of roles in Participate
 
-8. Proposition(*#ContactID, *#AgentID, *#DemandID, Status, DateProposed)
-Quand la Status=accpeted, on met a jour Demandes[ArtistIDFinal]
-Contrinate : DemandStart=<DateProposed<=DemandEnd
+8. Proposition(*#DemandID, *#ContactID(artist), Status, DateProposed, DateAnswered)
+Status : pending, accepted, rejected
+Quand Status=accpeted, on met a jour Demandes[Status]
+Contrainte : DemandStart=<DateProposed<=DemandEnd
 
 9. MultipleSkills(*DemandeID, *skillID)
+Contrainte : la skill ne peut pas être de type "professional" (car cela apparait déjà dans le champs RoleSearched de la demande)
 
-10. ContratContactAgency( *ContratCAID, #ContactID, #CompID, DateStart, DateEnd, PercentageTaken)
+10. ContratArtistAgency( *ContratAAID, #ContactID(artist), DateStart, DateEnd, PercentageTaken)
+DateEnd : NULL pour un contrat à durée indeterminée qui est toujours en cours
 
-11. Agent(*AgentID, E-mail, Firstname, Lastname, Gender, Birthday, Tel, Address, PostalCode)
+11. Agent(*AgentID, Firstname, Lastname, Gender, BirthDate, Tel, Email, Address, PostalCode)
 
-12. HistoryRepresent(*#ContactID, *#AgentID, DateStart, DateEnd)
+12. HistoryRepresent(*#ContactID(artist), *#AgentID, *DateStart, DateEnd)
+Contrainte : pour l'artiste, on doit avoir Societe=Agency
 
-13. ContratArtPro( *ContratAPID,#RelationID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))
+13. ContratArtPro( *ContratAPID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))
 Lors de la creation d'un contratpro , on insert directement une ou plusieurs lignes de paiement dans la compta.
-Si un contrat pro necessite 10 payements , on a 10 lignes dans la compta en status TODO
+Si un contrat pro necessite 10 paiements , on a 10 lignes dans la compta en status TODO
 
-14. Comptabilité(*CompID, #ContactID, #ContratCAID, #ContratAPID, Amount, Status, Date, RémunerationArtiste, CommissionAgence)
+14. Comptabilité(*ComptID, *#ContratArtPro, Amount, Status, Date,  RemunerationArtiste, CommissionAgency)
 
 TRIGGER : AFTER insert/update 
 calcul automatique de la comission+ remunerationArtiste , en fonction de Amount et du  PercentageTaken du ContratContactAgency 

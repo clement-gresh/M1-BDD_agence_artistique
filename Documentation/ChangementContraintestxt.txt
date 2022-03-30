@@ -1,0 +1,116 @@
+
+1. Contacts : 
+Changements : 
+- Supprimer Date dans la table Contacts
+- Merge Address et PostalCode car Address est une adress complete qui contient code de postal
+- Supprimer EventParticipated car on en a dans la table Paritipate
+
+Contraintes : 
+- 1. Birthday < NOW()
+- 2. Email NOT NULLL, contient @
+- 3. FirstName, LastName, Gender, Birthday, Tel, Address  NOT NULL
+------------------------------------------------------------------
+
+2. Trainings :
+Q : Est-ce qu'une demande peut se faire sur un Training précis ? Si oui, merge Training dans Skills.
+Q : Societe = Agency ?
+( Trigger avant insert into Trainings : on verifie si dans la tab CONTACTS pour ContactID, Societe = agency
+Sinon, on refuse l'insertion ) --> on garde en memoire tous les trainings , peu importe si ils ont ou non un contrat actuel avec l agence : les contrats bougent dans le temps 
+Proposition : faire une fonction pour supprime les training des contacts qui n ont pas eu de contrat depuis 10 ans 
+
+Changements : 
+- Renommer PostalCode to Address 
+
+Contraintes : 
+- (1) TrainingName, TrainingCenter, TrainingStart  NOT NULL
+- (2) TrainingEnd > TrainingStart
+------------------------------------------------------------------
+
+3. Skills : 
+Contraintes : 
+- (1) skillName, skillType NOT NULL
+- (2) skillID INT PRIMARY KEY NOT NULL AUTO_INCREMENT
+------------------------------------------------------------------
+4. KNOWS 
+5. MULTIPLE-SKILLS
+6. PARTICIPATE : Role NOT NULL 
+(Table de relation par ID)
+------------------------------------------------------------------
+7. Creations 
+Contraintes : 
+-1. CreationName, CreationType, Date NOT NULL
+-2. TRIGGER BEFORE  insert/update, update 0-n ligne dans compta en fonction de la Participation de tous les artistes y ayant joué
+
+------------------------------------------------------------------
+8. HistoryRepresent : 
+Contraintes : 
+-1. DateEnd > DateStart
+------------------------------------------------------------------
+9. Agents :
+- Renommer Agent to Agents
+- Merge Address et PostalCode car Address est une adress complete qui contient code de postal
+
+Contraintes : 
+- 1. E-mail, Firstname, Lastname, Tel, Address NOT NULL
+------------------------------------------------------------------
+10. ContratContactAgency :
+Changements : 
+- Supprimer ContratCAID
+- PK (*#ContactID, *DateStart)
+
+Contraintes : 
+-1. DateEnd > DateStart
+-2. PercentageTaken DOUBLE > 0
+------------------------------------------------------------------
+11. DEMANDS
+Q : Est-ce que Demande est une double entitié faible, 
+si oui, sa PK est (DemandID, ContactID, CreationID), peut-on réduire la PK uniquement sur DemandID ?
+
+Changements :
+- Supprimer RoleSearched car on en a déjà dans la table MultipleSkills
+- Supprimer CreationName car on en a déjà dans la table Creations
+- Supprimer ArtistIDFinal car on peut le retrouver avec une jointure Proposition 
+
+Contraintes : 
+-1. Status = open, close, cancel
+-2. Budget NOT NULL >=0 (benevole)
+-3. DemandEnd > DemandStart (la duree de la demande)
+-4. DemandStart < Creations[Date] et DemandEnd < Creations[Date]
+-5. DemandEnd NULLABLE, DemandStart NOT NULL
+------------------------------------------------------------------
+12.Propositions((*#ContactID, *#AgentID, *#DemandID, ...)
+Q : c.f Demande
+
+Contraintes:
+-1. Status NOT NULL : refused, accpeted, in progress
+-2. Status : Trigger BEFORE/UPDATE insert UNIQUE ContactID + DemandID + Status=accpeted parce y'a que 1 pers peut etre accpeté par rapport à une demande
+-3. DemandStart < DateProposed < DemandEnd : TRIGGER BEFORE/UPDATE insert Date Between, DemandEnd NULLABLE
+------------------------------------------------------------------
+13. ContratProfessional (*ContratAPID, *#ContactID, *#AgentID, *#DemandID, ...)
+Q : ContratAPID suffit-il comme une PK ?
+
+Contraintes : 
+-1. DateEnd > DateStart 
+-2. TRIGGER : DateStart > Proposition[DateProposed]
+-3. Remuneration DOUBLE >=0 
+-4. NumberPaiement > 0 
+-5. Avenant NULLABLE, FK ContratAPID
+-6. Participation LONG NOT NULL >=0
+------------------------------------------------------------------
+14. Comptabilité (*CompID, *ContratAPID, *#ContactID, *#AgentID, *#DemandID, ...)
+Q : comme la table ContratProfessional PK
+
+Changements :
+- Supprimer Frais car Frais = RenumerationArtist
+- Amount = Honoraires
+- CommissionAgence = Commission
+
+Contraintes:
+-1. Amount NULLABLE >0, CHECK NULL quand status = BONUS
+-2. Status NOT NULL : DONE, TODO, BONUS
+-3. Date : TRIGGER CHECK Date >= ContratProfessional[DateStart]
+-5. TRIGGER : AFTER insert/update 
+calcul automatique de la comission+ remunerationArtiste, 
+en fonction de Amount et du  PercentageTaken du ContratContactAgency lors du Changements du status (DONE)
+-6. CommissionAgence >=0, RenumerationArtist >=0
+

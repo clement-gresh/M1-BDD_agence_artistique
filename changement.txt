@@ -38,7 +38,9 @@ Contraintes :
 ------------------------------------------------------------------
 7. Creations 
 Contraintes : 
-- 1. CreationName, CreationType, Date NOT NULL
+-1. CreationName, CreationType, Date NOT NULL
+-2. TRIGGER BEFORE  insert/update, update 0-n ligne dans compta en fonction de la Participation de tous les artistes y ayant joué
+
 ------------------------------------------------------------------
 8. HistoryRepresent : 
 Contraintes : 
@@ -104,9 +106,9 @@ Changements :
 - CommissionAgence = Commission
 
 Contraintes:
--1. Amount >0
--2. Status NOT NULL : DONE, TODO 
--3. Date : TRIGGER CHECK Date between ContratProfessional[DateStart] et [DateEnd] 
+-1. Amount NULLABLE >0, CHECK NULL quand status = BONUS
+-2. Status NOT NULL : DONE, TODO, BONUS
+-3. Date : TRIGGER CHECK Date >= ContratProfessional[DateStart]
 -5. TRIGGER : AFTER insert/update 
 calcul automatique de la comission+ remunerationArtiste, 
 en fonction de Amount et du  PercentageTaken du ContratContactAgency lors du Changements du status (DONE)

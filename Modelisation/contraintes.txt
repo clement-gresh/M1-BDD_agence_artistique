@@ -75,7 +75,7 @@ Changements :
 
 Contraintes : 
 -(1) DateEnd > DateStart
--(2) PercentageTaken DOUBLE > 0
+-(2) PercentageTaken DOUBLE > 0 and < 100
 ------------------------------------------------------------------
 11. DEMANDS
 Q : Est-ce que Demande est une double entitié faible, 

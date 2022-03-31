@@ -4,12 +4,15 @@ Societe = Agency si les artists sont represents par l'agence
 Sinon, ce sont des personnes externes (Producteur/Studio)
 
 2. SKILLS(*skillID, skillName, skillType)
+skillType : Langues, Job, Instrument, MusicStyle
+Contrainte : anglais ne peut être qu'avec skillType=Langue, saxophone avec skillType=Instrument, etc.
+Contrainte : quelqu'un ayant un skillType = Instrument ou MusicStyle doit forcement avoir un skillName = Musicien dans la table
 
 3. KNOWS(*ArtistID, *SkillID)
 Une ligne = un skill pour une personne
 
 4. Trainings(*#ArtistID, *TrainingName, TrainingCenter, PostalCode, TrainingStart, TrainingEnd, Diploma)
-Contraintes : Societe
+Contraintes : 
 Trigger avant insert into Trainings : on verifie si dans la tab CONTACTS pour artID, Societe = agency
 Sinon, on refuse l'insertion
 

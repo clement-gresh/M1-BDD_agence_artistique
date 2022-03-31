@@ -45,7 +45,7 @@ Demands :
 		--> OK
 
 	•	Enlever CreationID dans le schéma (pas dans la table), car il apparaît déjà via le lien avec la table CREATIONS
-		--> ?
+		--> OK
 
 Proposition : AgentId ne me paraît pas utile
 --> Ca peut etre utile par exemple on peut garder la trace d'un artiste, sa performence etc

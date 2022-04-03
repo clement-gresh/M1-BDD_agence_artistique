@@ -134,3 +134,19 @@ Contraintes:
 calcul automatique de la comission+ remunerationArtiste, 
 en fonction de Amount et du  PercentageTaken du ContratContactAgency lors du Changements du status (DONE)
 -(5) CommissionAgence >=0, RenumerationArtist >=0
+
+15 Reviews
+Contraintes : 
+-1 1 Re  correspond exactement 1 Creation
+-2 Date > Creations[release_date]
+-3 content NOT NULL
+-4 garde DOUBLE NULLABLE entre 0-10
+
+16 Awards 
+Contraintes : 
+-1 1 Aw correspond 1 Contact
+-2 year >= Creations[release_date.year]
+
+
+17
+

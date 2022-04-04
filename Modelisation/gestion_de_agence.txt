@@ -1,0 +1,40 @@
+Gestion de l'agence :
+
+Inscription en tant qu'artiste : insert into Contacts, FestivalRecords, Festival), Knownskill, Involvments, Skill Création, Training
+	Si une création, un festival , training ou un skill n'est pas dans la liste, il est alors ajouté.
+	On associe a chaque création un skill précis pour un contactID ( relation ternaire).
+	
+Inscription en tant que producteur : insert into Contact, Known Skill
+	Le producteur doit connaître le skill "producteur"
+	
+Création d'une demande sur un spectacle :insert into Requests, Création, MultipleSkill
+	On doit renseigner le spectacle a créer , chaque ligne de la table Requests représente une unique demande, pouvant requérir de multiples Skills
+	Le statut de la demande peut être ouvert, en attente ou fermé.
+	
+Renseignement des reviews sur les spectacles : insert into Reviews
+
+Remise des Awards : insert into Awards
+
+Signature d'un contrat d'artiste avec l'agence : insert into AgencyContracts , AgentRecords
+	Lors de la signature, l'agence attribue un agent pour suivre une personne.
+	
+Mises en contact : Insert into Proposed
+	L'agent répond aux demandes apres analyse des skills requis,il trouve les personnes de son périmètre correspondant (lit les reviews , awards .. ) et met en contact les intéréssés 
+	Ces mises en contact peuvent être validées ou rejetées.
+	
+Signature des contrats Producteurs : insert into ProducerContracts
+	Lors de la signature, on gère le nombre de paiements pouvant avoir lieu.
+	Dès lors on insert autant de lignes dans la table PaymentRecords, en statut "En attente"
+
+Règlement : Update PaymentRecords
+
+Signature d'un avenant : insert into ProducerContracts
+	L'avenant est considéré comme un nouveau contrat, référençant la proposition. il aura une nouvelle date.
+	Lors de la signature d'un avenant, l'ensemble des paiements restants à effectuer de l'ancien contrat deviennent en état "Avenant" dans PaymentRecords :
+	On suspend les paiements restants, conserve les paiements déjà effectués, et insert de nouvelles lignes de paiement dans la table PaymentRecords.
+	
+Participation : update création
+	La mise à jour du profit sur la table création génère une nouvelle ligne de paiement dans la table PaymentRecords, pour l'artiste
+	Les honoraires de l'agence sont alors calculés depuis le contrat signé avec l'agence (pourcentage)
+	Les frais correspondant au paiement de l'artiste sont aussi calculés.
+	Chaque update de la table création entraine l'insertion d'une nouvelle ligne, en déduisant les montants déja payés.

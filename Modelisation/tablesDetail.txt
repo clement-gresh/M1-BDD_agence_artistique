@@ -1,55 +1,57 @@
-1. CONTACTS(*ContactID,Email, Societe, FirstName, LastName, Gender, BirthDate, Tel, Address, PostalCode, Awards, Reviews, EventParticipated)
-Contraintes : 
-Societe = Agency si les artists sont represents par l'agence
-Sinon, ce sont des personnes externes (Producteur/Studio)
+1. Contacts(*contact_id, email, society, first_name, last_name, gender, birthdate, tel, address, postal_code)
+------------------------------------------------------------------
 
-2. SKILLS(*skillID, skillName, skillType)
-skillType : Langues, Job, Instrument, MusicStyle
+2. Skills(*skill_id, skill_name, skill_type)
+skill_type : Langues, Job, Instrument, MusicStyle
 Contrainte : anglais ne peut être qu'avec skillType=Langue, saxophone avec skillType=Instrument, etc.
-Contrainte : quelqu'un ayant un skillType = Instrument ou MusicStyle doit forcement avoir un skillName = Musicien dans la table
+Contrainte : quelqu'un ayant un skill_type = Instrument ou MusicStyle doit forcement avoir un skill_name = Musicien dans la table
+------------------------------------------------------------------
 
-3. KNOWS(*ArtistID, *SkillID)
-Une ligne = un skill pour une personne
+3. KnownSkills(*contact_id, *skill_id)
+------------------------------------------------------------------
 
-4. Trainings(*#ArtistID, *TrainingName, TrainingCenter, PostalCode, TrainingStart, TrainingEnd, Diploma)
-Contraintes : 
-Trigger avant insert into Trainings : on verifie si dans la tab CONTACTS pour artID, Societe = agency
-Sinon, on refuse l'insertion
+4. Trainings(*#contact_id, *training_name,training_center, postal_code, training_start, training_end, diploma)
+------------------------------------------------------------------
 
-5. Creations(CreationID, CreationName, CreationType, Date, Producer)
+5. Creations(*creation_id, creation_name, creation_type, release_date, profits, last_update_profits)
 Quand le projet termine, ajoute la projet a la table : alert
 CreationType : album, song, play, movie, TV show, concert
+------------------------------------------------------------------
 
-6. Participate(*#ArtistID, *#CreationID, *Role)
+6. Involvments(*#contact_id, *#creation_id, #skill_id, description)
 An artist can be both a writer and a comedian for instance
 Role : writer, producer, singer, musician, comedian, metteur en scene...
-Contrainte : le role doit faire partie des competences de l'artiste (dans la table KNOWS)
+------------------------------------------------------------------
 
-7. Demands(*DemandID, *#ContactID(Createur), #CreationID, RoleSearched, CreationName Description, Budget, Status, DemandStart, DemandEnd)
-Role : cf list of roles in Participate
+7. Requests(*request_id, #creation_id(createur), description, budget, status, request_start, request_end)
+------------------------------------------------------------------
 
-8. Proposition(*#DemandID, *#ContactID(artist), Status, DateProposed, DateAnswered)
+8. Proposals(*#request_id, *#contact_id(artist), *#agent_id, status, proposed_date)
 Status : pending, accepted, rejected
 Quand Status=accpeted, on met a jour Demandes[Status]
 Contrainte : DemandStart=<DateProposed<=DemandEnd
+------------------------------------------------------------------
 
-9. MultipleSkills(*DemandeID, *skillID)
+9. RequiredSkills(*#request_id, *#skill_id)
 Contrainte : la skill ne peut pas être de type "professional" (car cela apparait déjà dans le champs RoleSearched de la demande)
+------------------------------------------------------------------
 
-10. ContratArtistAgency( *ContratAAID, #ContactID(artist), DateStart, DateEnd, PercentageTaken)
+10. AgencyContracts(*#contact_id, *start_date, end_date, fee)
 DateEnd : NULL pour un contrat à durée indeterminée qui est toujours en cours
+------------------------------------------------------------------
 
-11. Agent(*AgentID, Firstname, Lastname, Gender, BirthDate, Tel, Email, Address, PostalCode)
+11. Agents(*agent_id, email, first_name, last_name, gender, birthdate, tel, address, postal_code)
+------------------------------------------------------------------
 
-12. HistoryRepresent(*#ContactID(artist), *#AgentID, *DateStart, DateEnd)
-Contrainte : pour l'artiste, on doit avoir Societe=Agency
+12. AgentRecords(*#contact_id(artist), *#agent_id, *start_date, end_date)
+------------------------------------------------------------------
 
-13. ContratArtPro( *ContratAPID, DateStart, DateEnd, Remuneration, NumberPaiement, Avenant, Participation(%))
+13. ProducerContracts(*#request_id, *#contact_id(artist), *#agent_id, *prod_contract_id, start_date, end_date, salary, installments_number, amendment, incentive(%))
 Lors de la creation d'un contratpro , on insert directement une ou plusieurs lignes de paiement dans la compta.
 Si un contrat pro necessite 10 paiements , on a 10 lignes dans la compta en status TODO
+------------------------------------------------------------------
 
-14. Comptabilité(*ComptID, *#ContratArtPro, Amount, Status, Date,  RemunerationArtiste, CommissionAgency)
-
+14. PaymentRecords(*#request_id, *#contact_id(artist), *#agent_id, *prod_contract_id, *payment_id, amount, status, date, agency_fee, artist_salary, is_incentive)
 TRIGGER : AFTER insert/update 
 calcul automatique de la comission+ remunerationArtiste , en fonction de Amount et du  PercentageTaken du ContratContactAgency 
 
@@ -57,3 +59,4 @@ Gestion :
 Detection des contrats ToDo ayant une date de paiement passée
 Calcul benecice de l'agence sur les contrats , il est facile de calculer mensuellement
 Si on a les salaires des agents dans la table agent, on peut calculer le benefice total de l'agence
+------------------------------------------------------------------

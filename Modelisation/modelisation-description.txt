@@ -1,0 +1,26 @@
+Clement Gresh - Su LiFang
+Base de donnees "Agency"
+
+Les artistes representes par l'agence sont regroupes dans une table Contacts qui repertorie egalement les contacts externes de l'agence.
+Une jointure avec la table AgencyContracts permet de les differencier.
+
+La table Creations repertorie les oeuvres auxquelles les artistes ont participe et celles pour lesquelles une requete a ete deposee
+aupres de l'agence.
+
+Une table Skills permet de lister les differentes competences (ecrivain, chanteur mais egalement les langues parlees ou les instruments
+joues). Cela permet d'indiquer quel role avait un artiste dans la creation d'une oeuvre, quelles competences un artiste possede ou encore
+quelles competences sont recherchees lorsqu'une requête est deposee auprès de l'agence (table Requests).
+
+La table Awards liste les prix attribues a une oeuvre. Lorsque ce prix est nominatif (e.g. meilleur acteur), on y indique egalement
+l'artiste concerne. C'est le meme principe qui est applique pour la table Reviews.
+
+Lorsqu'une requete est deposee aupres de l'agence afin de trouver un talent, l'oeuvre associee est ajoutee dans la table creation. Des
+propositions d'artiste sont alors effectuees et listees dans la table Proposals. Si une proposition est acceptee, on cree un contrat
+dans la table ProducerContracts. Des avenants peuvent ensuite etre ajoute sous la forme de nouvelles entrees qui sont liees au contrat
+initial grace au champ proposal_id.
+
+Chaque nouveau contrat (y compris un avenant) entraine la creation de nouveaux paiements dans la table PaymentRecords avec un statut TODO.
+Le statut passe a DONE une fois le paiement effectue. Lors de la creation d'un avenant, tous les paiements lies au contrat et non
+encore effectue sont egalement annules. Le champ is_incentive permet d'indiquer les entrees supplementaires correspondant a
+l'interessement de l'artiste. Leur montant est calcule a chaque mise a jour de Creations[profits] grace au pourcentage d'interessement
+indique dans le contrat entre l'artiste et le producteur.

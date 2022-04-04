@@ -1,38 +1,38 @@
 
 
-1. Contacts : 
+1. Contacts(*contact_id, email, society, first_name, last_name, gender, birthdate, tel, address, postal_code)
 Contraintes : 
 -(1) birthdate < NOW(), NOT NULL
 -(2) email NOT NULLL, contient @ (TRIGGER Véfier avec expression reg)
 -(3) first_name, last_name, gender, tel, address, postal_code  NOT NULL
 ------------------------------------------------------------------
 
-2. Trainings :
+2. Trainings(*#contact_id, *training_name,training_center, postal_code, training_start, training_end, diploma)
 Contraintes : 
 -(1) training_name, training_center, training_start NOT NULL
 -(2) training_end > training_start
 ------------------------------------------------------------------
 
-3. Skills : 
+3. Skills(*skill_id, skill_name, skill_type)
 Contraintes : 
 - (1) skill_name, skill_type NOT NULL
 - (2) skill_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT
 - (3) TRIGGER : skill_name et skill_type dovient liés (ex : EN --/-- Job, EN == Lanage)
 ------------------------------------------------------------------
 
-4. KnownSkills 
-5. RequiredSkills
+4. KnownSkills(*contact_id, *skill_id)
+5. RequiredSkills(*#request_id, *#skill_id)
 (Les tables de relations par ID)
 ------------------------------------------------------------------
 
-6. Involvments : 
+6.  Involvments(*#contact_id, *#creation_id, #skill_id, description)
 Contraintes : 
 -(1) skill_type doit églae Job 
 -(2) skill_name d'un artiste doit appraître dans la table KnownSkills
 -(3) description NULLABLE 
 ------------------------------------------------------------------
 
-7. Creations 
+7. Creations(*creation_id, creation_name, creation_type, release_date, profits, last_update_profits) 
 Contraintes : 
 -(1) creation_name, creation_type NOT NULL
 -(2) release_date NULLABLE 
@@ -46,20 +46,20 @@ Contraintes :
 -(2) si end_date est NULL, contract est en cours
 ------------------------------------------------------------------
 
-9. Agents :
+9. Agents(*agent_id, email, first_name, last_name, gender, birthdate, tel, address, postal_code)
 Contraintes : 
 -(1) birthdate < NOW()
 -(2) email NOT NULLL, contient @ (TRIGGER Véfier avec expression reg)
 -(3) first_name, last_name, gender, tel, address  NOT NULL
 ------------------------------------------------------------------
 
-10. AgencyContracts :
+10. AgencyContracts(*#contact_id, *start_date, end_date, fee)
 Contraintes : 
 -(1) end_date > start_date
 -(2) fee(%) DOUBLE > 0 et <= 100
 ------------------------------------------------------------------
 
-11. Requests
+11. Requests(*request_id, #creation_id(createur), description, budget, status, request_start, request_end)
 Contraintes : 
 -(1) status = open, close, cancel
 -(2) budget NOT NULL >=0 (benevole)
@@ -70,7 +70,7 @@ Contraintes :
 -(7) KnownSkills : une demande doit être lier au moins une skill dont le type est Job
 ------------------------------------------------------------------
 
-12.Proposals
+12. Proposals(*#request_id, *#contact_id(artist), *#agent_id, status, proposed_date)
 Contraintes:
 -(1) status NOT NULL : rejected, accpeted, pending
 -(2) status : Trigger BEFORE insert/update UNIQUE request_id + status = accpeted parce y'a que 1 pers peut etre accpeté par rapport à une demande
@@ -78,7 +78,7 @@ Contraintes:
 -(4) request_start < proposed_date < request_end : TRIGGER BEFORE insert/update Date Between, request_end NULLABLE
 ------------------------------------------------------------------
 
-13. ProducerContracts
+13.  ProducerContracts(*#request_id, *#contact_id(artist), *#agent_id, *prod_contract_id, start_date, end_date, salary, installments_number, amendment, incentive(%))
 Contraintes : 
 -(1) end_date > start_date 
 -(2) TRIGGER : start_date > Proposals[proposed_date]
@@ -88,7 +88,7 @@ Contraintes :
 -(6) incentive DOUBLE NOT NULL >= 0
 ------------------------------------------------------------------
 
-14. Comptabilité
+14. PaymentRecords(*#request_id, *#contact_id(artist), *#agent_id, *prod_contract_id, *payment_id, amount, status, date, agency_fee, artist_salary, is_incentive)
 Contraintes:
 -(1) amount NULLABLE > 0, CHECK NULL quand is_incentive = True
 -(2) status NOT NULL : DONE, TODO, BONUS
@@ -98,7 +98,7 @@ Contraintes:
 -(5) agency_fee >=0, artist_salary >=0
 ------------------------------------------------------------------
 
-15. Reviews
+15. Reviews(*#creation_id, *author, *date, #contact_id, media, content, grade)
 Contraintes : 
 -(1) 1 Review correspond exactement 1 Creation
 -(2) Date > Creations[release_date]
@@ -106,11 +106,11 @@ Contraintes :
 -(4) garde DOUBLE NULLABLE >= 0 et <=10
 ------------------------------------------------------------------
 
-16 Awards 
+16 Awards(*#creation_id, *award_name, *category, #contact_id, year)
 Contraintes : 
 -(1) 1 Award correspond 1 contact
 -(2) year >= Creations[release_date.year]
 ------------------------------------------------------------------
 
-17. Festivals
+17. Festivals(*festival_id, #contact_id, festival_name, date, festival_type, city, country)
 ------------------------------------------------------------------

@@ -3,11 +3,11 @@
 1. Contacts(*contact_id, email, society, first_name, last_name, gender, birthdate, tel, address, postal_code)
 Contraintes : 
 -(1) birthdate < NOW(), NOT NULL
--(2) email NOT NULLL, contient @ (TRIGGER Véfier avec expression reg)
+-(2) email NOT NULLL, TRIGGER pour éfier le format avec une expression reguliere
 -(3) first_name, last_name, gender, tel, address, postal_code  NOT NULL
 ------------------------------------------------------------------
 
-2. Trainings(*#contact_id, *training_name,training_center, postal_code, training_start, training_end, diploma)
+2. Trainings(*#contact_id, *training_name, training_center, postal_code, training_start, training_end, diploma)
 Contraintes : 
 -(1) training_name, training_center, training_start NOT NULL
 -(2) training_end > training_start
@@ -17,12 +17,21 @@ Contraintes :
 Contraintes : 
 - (1) skill_name, skill_type NOT NULL
 - (2) skill_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT
-- (3) TRIGGER : skill_name et skill_type dovient liés (ex : EN --/-- Job, EN == Lanage)
+- (3) skill_type ∈ {job, instrument, language, style}
+- (4) skill_name ∈ { writter, musician, actor, director, producer...
+		    saxophone, violin, piano...
+		    french, english, arabic, hindi...
+		    jazz, classic, R&B... }
+- (5) CHECK : verifier que skill_name et skill_type sont coherents (ex : english avec language et non avec job)
+
 ------------------------------------------------------------------
 
-4. KnownSkills(*contact_id, *skill_id)
+4. KnownSkills(*#contact_id, *#skill_id)
+Contraintes : 
+- (1) TRIGGER : seul un musicien peut avoir un skill_type = instrument ou style
+
 5. RequiredSkills(*#request_id, *#skill_id)
-(Les tables de relations par ID)
+
 ------------------------------------------------------------------
 
 6.  Involvments(*#contact_id, *#creation_id, #skill_id, description)
@@ -38,9 +47,10 @@ Contraintes :
 -(2) release_date NULLABLE 
 -(3) TRIGGER : BEFORE  insert/update, update 0-n ligne dans la table PaymentRecords 
 en fonction de la Participation de tous les artistes y ayant joué
+- (4) CreationType : album, song, play, movie, TV show, concert
 ------------------------------------------------------------------
 
-8. AgentRecords : 
+8. AgentRecords(*#agent_id, *#contact_id, *start_date, end_date)
 Contraintes : 
 -(1) end_date > start_date
 -(2) si end_date est NULL, contract est en cours
@@ -54,12 +64,13 @@ Contraintes :
 ------------------------------------------------------------------
 
 10. AgencyContracts(*#contact_id, *start_date, end_date, fee)
+DateEnd : NULL pour un contrat à durée indeterminée qui est toujours en cours
 Contraintes : 
 -(1) end_date > start_date
 -(2) fee(%) DOUBLE > 0 et <= 100
 ------------------------------------------------------------------
 
-11. Requests(*request_id, #creation_id(createur), description, budget, status, request_start, request_end)
+11. Requests(*request_id, #contact_id(producer), #creation_id, description, budget, status, request_start, request_end)
 Contraintes : 
 -(1) status = open, close, cancel
 -(2) budget NOT NULL >=0 (benevole)
@@ -70,7 +81,7 @@ Contraintes :
 -(7) KnownSkills : une demande doit être lier au moins une skill dont le type est Job
 ------------------------------------------------------------------
 
-12. Proposals(*#request_id, *#contact_id(artist), *#agent_id, status, proposed_date)
+12. Proposals(*proposal_id, #request_id, #contact_id(artist), #agent_id, status, proposed_date)
 Contraintes:
 -(1) status NOT NULL : rejected, accpeted, pending
 -(2) status : Trigger BEFORE insert/update UNIQUE request_id + status = accpeted parce y'a que 1 pers peut etre accpeté par rapport à une demande
@@ -78,7 +89,7 @@ Contraintes:
 -(4) request_start < proposed_date < request_end : TRIGGER BEFORE insert/update Date Between, request_end NULLABLE
 ------------------------------------------------------------------
 
-13.  ProducerContracts(*#request_id, *#contact_id(artist), *#agent_id, *prod_contract_id, start_date, end_date, salary, installments_number, amendment, incentive(%))
+13.  ProducerContracts(*#proposal_id, *start_date, end_date, salary, installments_number, amendment, incentive(%))
 Contraintes : 
 -(1) end_date > start_date 
 -(2) TRIGGER : start_date > Proposals[proposed_date]
@@ -86,13 +97,16 @@ Contraintes :
 -(4) installments_number > 0, case où installments_number peut être 0 lors Requests[budget] = 0
 -(5) amendment NULLABLE, FK prod_contract_id
 -(6) incentive DOUBLE NOT NULL >= 0
+-(7) Quand on crée un AVENANT, on annule les paiements du contrat précédent n'ayant pas encore eu lieu
+-(8) Chaque nouveau contrat genere des entrées de comptabilité (Pour tous les contrats)
+
 ------------------------------------------------------------------
 
-14. PaymentRecords(*#request_id, *#contact_id(artist), *#agent_id, *prod_contract_id, *payment_id, amount, status, date, agency_fee, artist_salary, is_incentive)
+14. PaymentRecords(*#proposal_id, *#start_date(contract), *payment_number, amount, status, date, agency_fee, artist_salary, is_incentive)
 Contraintes:
 -(1) amount NULLABLE > 0, CHECK NULL quand is_incentive = True
 -(2) status NOT NULL : DONE, TODO, BONUS
--(3) aate : TRIGGER CHECK aate >= ProducerContracts[start_date]
+-(3) date : TRIGGER CHECK date >= ProducerContracts[start_date] && date >= NOW()
 -(4) TRIGGER : AFTER insert/update Calcul automatique de agency_fee et artist_salary, 
      en fonction de amount et de AgencyContracts[fee] lors du changements du status (DONE)
 -(5) agency_fee >=0, artist_salary >=0
@@ -104,13 +118,17 @@ Contraintes :
 -(2) Date > Creations[release_date]
 -(3) content NOT NULL
 -(4) garde DOUBLE NULLABLE >= 0 et <=10
+-(5) contact_id is NULLABLE
 ------------------------------------------------------------------
 
 16 Awards(*#creation_id, *award_name, *category, #contact_id, year)
 Contraintes : 
--(1) 1 Award correspond 1 contact
+-(1) 1 Award correspond exactement a 1 creation
 -(2) year >= Creations[release_date.year]
+-(3) contact_id is NULLABLE
 ------------------------------------------------------------------
 
-17. Festivals(*festival_id, #contact_id, festival_name, date, festival_type, city, country)
+17. Festivals(*festival_id, festival_name, date, festival_type, city, country)
 ------------------------------------------------------------------
+
+18. FestivalRecords(*#festival_id, *#contact_id)

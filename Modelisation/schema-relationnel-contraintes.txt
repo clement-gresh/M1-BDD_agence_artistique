@@ -81,35 +81,37 @@ Contraintes :
 -(7) KnownSkills : une demande doit être lier au moins une skill dont le type est Job
 ------------------------------------------------------------------
 
-12. Proposals(*proposal_id, #request_id, #contact_id(artist), #agent_id, status, proposed_date)
+12. Proposals(*proposal_id, #request_id, #contact_id(artist), status, proposed_date)
 Contraintes:
 -(1) status NOT NULL : rejected, accpeted, pending
 -(2) status : Trigger BEFORE insert/update UNIQUE request_id + status = accpeted parce y'a que 1 pers peut etre accpeté par rapport à une demande
 -(3) TRIGGER : Once proposition linked to a demand is accpeted by an artist, the others propositions linked to that demand become status=rejected
 -(4) request_start < proposed_date < request_end : TRIGGER BEFORE insert/update Date Between, request_end NULLABLE
+-(5) TRIGGER : verifier que l'artiste propose a un contrat en cours ET qu'il n'a pas deja ete propose
 ------------------------------------------------------------------
 
-13.  ProducerContracts(*#proposal_id, *start_date, end_date, salary, installments_number, amendment, incentive(%))
+13.  ProducerContracts(*#proposal_id, *start_date, end_date, salary, installments_number, is_amendment, incentive(%))
 Contraintes : 
 -(1) end_date > start_date 
 -(2) TRIGGER : start_date > Proposals[proposed_date]
 -(3) salary DOUBLE >= 0 
 -(4) installments_number > 0, case où installments_number peut être 0 lors Requests[budget] = 0
--(5) amendment NULLABLE, FK prod_contract_id
+-(5) is_amendment boolean
 -(6) incentive DOUBLE NOT NULL >= 0
 -(7) Quand on crée un AVENANT, on annule les paiements du contrat précédent n'ayant pas encore eu lieu
 -(8) Chaque nouveau contrat genere des entrées de comptabilité (Pour tous les contrats)
 
 ------------------------------------------------------------------
 
-14. PaymentRecords(*#proposal_id, *#start_date(contract), *payment_number, amount, status, date, agency_fee, artist_salary, is_incentive)
+14. PaymentRecords(*#proposal_id, *#start_date(contract), *payment_number, amount, status, date_planned, date_paid, is_incentive)
 Contraintes:
 -(1) amount NULLABLE > 0, CHECK NULL quand is_incentive = True
--(2) status NOT NULL : DONE, TODO, BONUS
--(3) date : TRIGGER CHECK date >= ProducerContracts[start_date] && date >= NOW()
--(4) TRIGGER : AFTER insert/update Calcul automatique de agency_fee et artist_salary, 
-     en fonction de amount et de AgencyContracts[fee] lors du changements du status (DONE)
+-(2) status NOT NULL : DONE, TODO, CANCELLED
+-(3) date_planned, date_paid : TRIGGER CHECK >= ProducerContracts[start_date] && date >= NOW()
 -(5) agency_fee >=0, artist_salary >=0
+-(6) date_planned NOT NULL
+-(7) date_paid NULLABLE
+
 ------------------------------------------------------------------
 
 15. Reviews(*#creation_id, *author, *date, #contact_id, media, content, grade)
@@ -121,7 +123,7 @@ Contraintes :
 -(5) contact_id is NULLABLE
 ------------------------------------------------------------------
 
-16 Awards(*#creation_id, *award_name, *category, #contact_id, year)
+16 Awards(*award_name, *category, *year, #creation_id, #contact_id)
 Contraintes : 
 -(1) 1 Award correspond exactement a 1 creation
 -(2) year >= Creations[release_date.year]

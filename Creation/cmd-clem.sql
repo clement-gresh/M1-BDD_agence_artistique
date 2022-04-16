@@ -101,6 +101,34 @@ CREATE TABLE Involvments(
 	CONSTRAINT Involvments_creation_id_fkey FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
 	CONSTRAINT Involvments_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
+-- trigger : verifier que skill est du type job
+-- trigger : verifier que skill_name apparait bien dans KnownSkills pour ce contact
+
+CREATE OR REPLACE FUNCTION is_skill_job() RETURNS trigger AS $$
+BEGIN
+	SELECT skill_type FROM Involvments INNER JOIN Skills ON Skills.skill_id = Involvments.skill_id
+	WHERE Involvments.skill_id = NEW.skill_id AND Skills.skill_type = 'job'::skill_type_enum;
+	RETURN NULL;
+END
+$$ LANGUAGE plpgsql;
+
+-- CREATE TRIGGER Involvments_skill_id_trigger
+-- BEFORE INSERT OR UPDATE ON Involvments
+-- FOR EACH ROW
+-- WHEN (NEW.skill_id 
+-- WHEN (OLD.skill_id IS DISTINCT FROM NEW.skill_id) -- est-ce que cela marche pour les insert (car pas de old) ?
+-- EXECUTE PROCEDURE is_skill_job();
+
+
+
+CREATE TABLE KnownSkills(
+	contact_id INT NOT NULL,
+	skill_id INT NOT NULL,
+	CONSTRAINT KnownSkills_pk PRIMARY KEY (contact_id, skill_id),
+	-- CONSTRAINT KnownSkills_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
+	CONSTRAINT KnownSkills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
+);
+-- trigger : seul un musicien peut avoir un skill_type = instrument ou style
 
 
 \dt

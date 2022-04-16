@@ -1,8 +1,8 @@
 
 
-1. Contacts(*contact_id, email, society, first_name, last_name, gender, birthdate, tel, address, postal_code)
+1. Contacts(*contact_id, email, society, first_name, last_name, gender, birth_date, tel, address, postal_code)
 Contraintes : 
--(1) birthdate < NOW(), NOT NULL
+-(1) birth_date < NOW(), NOT NULL
 -(2) email NOT NULLL, TRIGGER pour éfier le format avec une expression reguliere
 -(3) first_name, last_name, gender, tel, address, postal_code  NOT NULL
 ------------------------------------------------------------------
@@ -56,9 +56,9 @@ Contraintes :
 -(2) si end_date est NULL, contract est en cours
 ------------------------------------------------------------------
 
-9. Agents(*agent_id, email, first_name, last_name, gender, birthdate, tel, address, postal_code)
+9. Agents(*agent_id, email, first_name, last_name, gender, birth_date, tel, address, postal_code)
 Contraintes : 
--(1) birthdate < NOW()
+-(1) birth_date < NOW()
 -(2) email NOT NULLL, contient @ (TRIGGER Véfier avec expression reg)
 -(3) first_name, last_name, gender, tel, address  NOT NULL
 ------------------------------------------------------------------

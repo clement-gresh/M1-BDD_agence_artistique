@@ -101,23 +101,7 @@ CREATE TABLE Involvments(
 	CONSTRAINT Involvments_creation_id_fkey FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
 	CONSTRAINT Involvments_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
--- trigger : verifier que skill est du type job
 -- trigger : verifier que skill_name apparait bien dans KnownSkills pour ce contact
-
-CREATE OR REPLACE FUNCTION is_skill_job() RETURNS trigger AS $$
-BEGIN
-	SELECT skill_type FROM Involvments INNER JOIN Skills ON Skills.skill_id = Involvments.skill_id
-	WHERE Involvments.skill_id = NEW.skill_id AND Skills.skill_type = 'job'::skill_type_enum;
-	RETURN NULL;
-END
-$$ LANGUAGE plpgsql;
-
--- CREATE TRIGGER Involvments_skill_id_trigger
--- BEFORE INSERT OR UPDATE ON Involvments
--- FOR EACH ROW
--- WHEN (NEW.skill_id 
--- WHEN (OLD.skill_id IS DISTINCT FROM NEW.skill_id) -- est-ce que cela marche pour les insert (car pas de old) ?
--- EXECUTE PROCEDURE is_skill_job();
 
 
 
@@ -129,6 +113,36 @@ CREATE TABLE KnownSkills(
 	CONSTRAINT KnownSkills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
 -- trigger : seul un musicien peut avoir un skill_type = instrument ou style
+
+
+-- Involvments : checks that the skill referenced is of type 'job'
+CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
+   declare 
+      nb INT;
+	BEGIN
+		SELECT Count(*) INTO nb
+		FROM Involvments INNER JOIN Skills
+			ON Skills.skill_id = Involvments.skill_id
+		WHERE Involvments.skill_id = NEW.skill_id AND Skills.skill_type = 'job'::skill_type_enum;
+		
+		IF (nb = 0) THEN
+			RAISE NOTICE 'Rejected line ("%", "%", "%") because the skill is not of type job',
+				NEW.contact_id, NEW.creation_id, NEW.skill_id;
+			RETURN NULL;
+		ELSE
+			RETURN NEW;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER Involvments_skill_id_trigger
+BEFORE INSERT OR UPDATE ON Involvments
+FOR EACH ROW
+EXECUTE PROCEDURE is_skill_job();
+
+-- Involvments : checks in KnownSkills that the artist does have the skill referenced
+-- CREATE OR REPLACE has_skill() RETURNS TRIGGER AS $$
+
 
 
 \dt
@@ -150,6 +164,7 @@ CREATE TABLE KnownSkills(
 -- demander rdv
 -- Qu'est ce qu'un schema ?
 -- ENGINE = INNODB ???
+-- quelle difference entre faire un check(function) et un TRIGGER(function) ? Quand les 2 sont possibles, lequel est preferable ?
 
 
 -- KnownSkills

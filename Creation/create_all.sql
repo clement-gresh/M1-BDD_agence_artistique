@@ -6,7 +6,7 @@ SET datestyle = GERMAN, YMD;
 
 
 -- TYPES
-CREATE TYPE gender_type AS ENUM ('M', 'F', 'NB', 'NONE');
+CREATE TYPE gender_type AS ENUM ('M', 'F', 'Nb', 'None');
 CREATE TYPE proposals_status_type AS ENUM ('rejected', 'accpeted', 'pending');
 CREATE TYPE requests_status_type AS ENUM ('open', 'close', 'cancel');
 CREATE TYPE payments_status_type AS ENUM ('done', 'todo', 'cancelled');
@@ -19,27 +19,24 @@ CREATE TYPE skill_name_type AS ENUM (
 	'jazz', 'classical', 'RandB', 'rock', 'soul', 'rap', 'slam', 'metal'
 );
 
-
 -- TABLES
 CREATE TABLE Contacts 
 (   
-    contact_id SERIAL, 
+    contact_id SERIAL CONSTRAINT Contacts_contact_id_pk PRIMARY KEY,
     email VARCHAR(100) NOT NULL,  
     society VARCHAR(100),
     first_name VARCHAR(50) NOT NULL, 
     last_name VARCHAR(50) NOT NULL, 
     gender gender_type NOT NULL, 
-    birth_date DATE, 
-    tel VARCHAR(20) NOT NULL,
+    birth_date DATE,
+    tel VARCHAR(20),  --NOT NULL : ALTER après l'inserction 
     city VARCHAR(50), 
-    address VARCHAR(200),  --NOT NULL SI contact est represent par notre agent : verifier AgnecyContracts en cours
+    address VARCHAR(200),  -- Trigger : vérifier NOT NULL SI contact est represent par notre agent : verifier AgnecyContracts en cours
     postal_code INTEGER,
-	CONSTRAINT Contacts_contact_id_pk PRIMARY KEY (contact_id),
     CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9.-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
     CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
     CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW())
 );
-
 
 CREATE TABLE Creations(
 	creation_id SERIAL NOT NULL,
@@ -60,9 +57,9 @@ CREATE TABLE Creations(
 CREATE TABLE Requests
 (
     request_id SERIAL CONSTRAINT Requests_request_id_pk PRIMARY KEY,
-    contact_id INTEGER,
+    contact_id INTEGER, --trigger vérifier que contact a un skill_type : job : producteur
     creation_id INTEGER, 
-    description TEXT, 
+    request_description TEXT, 
     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),  --trigger >=0
     request_status requests_status_type NOT NULL, 
     request_start DATE NOT NULL, 
@@ -149,12 +146,12 @@ CREATE TABLE Agents (
 
 CREATE TABLE AgencyContracts(
 	contact_id INT NOT NULL,
-	start_date DATE NOT NULL,	-- contract_start
+	start_date DATE NOT NULL,	--contract_start
 	end_date DATE,				--contract_end
-	fee NUMERIC(6,4) NOT NULL,
+	fee NUMERIC(6,4) NOT NULL,  --commission
 	CONSTRAINT AgencyContracts_pkey PRIMARY KEY (contact_id, start_date),
 	CONSTRAINT agency_contracts_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
-	CONSTRAINT start_date_check CHECK (start_date > '2000-01-01' AND start_date < '2100-01-01'),
+	CONSTRAINT start_date_check CHECK (start_date > '1900-01-01' AND start_date < '2100-01-01'),
 	CONSTRAINT end_date_check CHECK (end_date > start_date AND end_date < '2100-01-01'),
 	CONSTRAINT fee_check CHECK (fee > 0 AND fee < 100)
 );
@@ -167,7 +164,7 @@ CREATE TABLE AgentRecords(
 	CONSTRAINT AgentRecord_pkey PRIMARY KEY (agent_id, contact_id),
 	CONSTRAINT agent_record_agent_id_fkey FOREIGN KEY (agent_id) REFERENCES project_db_2021.Agents (agent_id),
 	CONSTRAINT agent_record_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
-	CONSTRAINT start_date_check CHECK (start_date > '2000-01-01' AND start_date < '2100-01-01'),
+	CONSTRAINT start_date_check CHECK (start_date > '1900-01-01' AND start_date < '2100-01-01'),
 	CONSTRAINT end_date_check CHECK (end_date > start_date AND end_date < '2100-01-01')
 );
 
@@ -194,4 +191,3 @@ CREATE TABLE KnownSkills(
 -- trigger : seul un musicien peut avoir un skill_type = instrument ou style
 
 
-\dt

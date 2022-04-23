@@ -7,7 +7,7 @@ CSV HEADER;
 
 UPDATE contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN (SELECT contact_id FROM contacts ORDER BY RANDOM() LIMIT 1000);
 
-update contacts set birth_date =  TO_date(to_char(  1+random() *27, '00') || '/' || to_char( 1+random() *11, '00') || '/' ||  to_char( 1921 +random() *80, '0000') ,'DD/ MM/ YYYY' );
+update contacts set birth_date =  TO_date(to_char(  1+random() *27, '00') || '/' || to_char( 1+random() *11, '00') || '/' ||  to_char( 1925 +random() *80, '0000') ,'DD/ MM/ YYYY' );
 
 UPDATE contacts SET tel= '+33' || to_char( 600000000 + random() * 200000000 + 1, 'FM999999999') ;
 ALTER TABLE contacts ALTER COLUMN tel SET NOT NULL;
@@ -24,21 +24,3 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
                                    'Taipei', 'Havana', 'New Delhi', 'Rome', 'Manila',
                                    'Moscow', 'Sydney', 'Dubai', 'Madrid', 'Osaka'])[floor(random() * 30 + 1)];
 SELECT * FROM contacts LIMIT 5;
-
--- Requests
-INSERT INTO requests
-=> CHECK PRODCONTACT has skill procuder , else give it to him
-INSERT ON REQUIREDSKILL
-
-
---     request_id SERIAL CONSTRAINT Requests_request_id_pk PRIMARY KEY,
---     contact_id INTEGER,
---     creation_id INTEGER, 
---     description TEXT, 
---     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),  --trigger >=0
---     request_status requests_status_type NOT NULL, 
---     request_start DATE NOT NULL, 
---     request_end DATE,
---     CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
---     CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
---     CHECK(request_end >= request_start)

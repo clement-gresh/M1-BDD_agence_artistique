@@ -57,15 +57,15 @@ CREATE TABLE Creations(
 CREATE TABLE Requests
 (
     request_id SERIAL CONSTRAINT Requests_request_id_pk PRIMARY KEY,
-    contact_id INTEGER, --trigger vérifier que contact a un skill_type : job : producteur
-    creation_id INTEGER, 
+    contact_id INTEGER NOT NULL, --trigger vérifier que contact a un skill_type : job : producteur
+    --creation_id INTEGER NOT NULL, 
     request_description TEXT, 
     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),  --trigger >=0
     request_status requests_status_type NOT NULL, 
     request_start DATE NOT NULL, 
     request_end DATE,
     CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
-    CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
+    --CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
     CHECK(request_end >= request_start)
 );
 

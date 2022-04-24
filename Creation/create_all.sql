@@ -32,8 +32,8 @@ CREATE TABLE Contacts
     tel VARCHAR(20),  --NOT NULL : ALTER après l'inserction 
     city VARCHAR(50), 
 	address VARCHAR(200),  --Trigger : vérifier NOT NULL SI contact est represent par notre agent : verifier AgnecyContracts en cours
-	postal_code VARCHAR(8) NOT NULL,
-	CONSTRAINT Contacts_contact_id_pk PRIMARY KEY (contact_id),CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9.-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
+	postal_code VARCHAR(8),
+	CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9.-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
     CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
     CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
 	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$')

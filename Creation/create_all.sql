@@ -156,6 +156,7 @@ CREATE TABLE AgencyContracts(
 	CONSTRAINT contract_end_check CHECK (contract_end > contract_start AND contract_end < '2100-01-01'),
 	CONSTRAINT fee_check CHECK (fee > 0 AND fee < 100)
 );
+-- trigger : verifier que deux contrats avec le meme artiste n'ont pas cours au meme moment
 
 CREATE TABLE AgentRecords(
 	agent_id INT NOT NULL,

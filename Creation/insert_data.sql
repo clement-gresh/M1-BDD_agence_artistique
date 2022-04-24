@@ -1,9 +1,6 @@
 
 --Contacts
-COPY contacts(first_name, last_name, email, gender)
-FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/contacts.csv'
-DELIMITER ','
-CSV HEADER;
+COPY contacts(first_name, last_name, email, gender) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/contacts.csv' WITH (FORMAT CSV);
 
 UPDATE contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN (SELECT contact_id FROM contacts ORDER BY RANDOM() LIMIT 1000);
 
@@ -15,7 +12,7 @@ ALTER TABLE contacts ALTER COLUMN tel SET NOT NULL;
 -- 1+random()*98 avoid generating ##
 UPDATE contacts SET address = to_char(  1+random()*98, '00') || ' rue de ' || last_name;
 
-UPDATE contacts SET postal_code = 1+random() *99999;
+UPDATE contacts SET postal_code = floor(1+random()*99999);
 
 update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chicago', 
                                    'London', 'Berlin', 'Tokyo', 'New York', 'Marseille', 
@@ -24,3 +21,19 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
                                    'Taipei', 'Havana', 'New Delhi', 'Rome', 'Manila',
                                    'Moscow', 'Sydney', 'Dubai', 'Madrid', 'Osaka'])[floor(random() * 30 + 1)];
 SELECT * FROM contacts LIMIT 5;
+
+--Agents
+COPY Agents(email, first_name, last_name, gender, birth_date, tel, address, city, postal_code) 
+FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Agents.csv' WITH (FORMAT CSV);
+SELECT * FROM Agents LIMIT 5;
+
+-- --Creations
+COPY Creations(creation_name, creation_type, release_date, profits, last_update_profits) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creations.csv' WITH (FORMAT CSV);
+UPDATE Creations SET profits = 0 WHERE  release_date > NOW();
+UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR last_update_profits < release_date);
+SELECT * FROM Creations LIMIT 5;
+
+-- --Skills
+COPY Skills(skill_name, skill_type) 
+FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV);
+SELECT * FROM Skills LIMIT 5;

@@ -33,11 +33,12 @@ CREATE TABLE Contacts
     tel VARCHAR(20) NOT NULL,
     city VARCHAR(50), 
     address VARCHAR(200),  --NOT NULL SI contact est represent par notre agent : verifier AgnecyContracts en cours
-    postal_code INTEGER,
+	postal_code VARCHAR(8) NOT NULL,
 	CONSTRAINT Contacts_contact_id_pk PRIMARY KEY (contact_id),
     CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9.-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
     CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
-    CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW())
+    CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
+	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$')
 );
 
 
@@ -47,11 +48,11 @@ CREATE TABLE Creations(
 	creation_type creation_type NOT NULL,
 	release_date DATE,
 	profits NUMERIC(12,2) NOT NULL,
-	last_update_profit DATE NOT NULL,
+	last_update_profits DATE NOT NULL,
 	CONSTRAINT Creations_pk PRIMARY KEY (creation_id),
 	CONSTRAINT release_date_check CHECK (release_date > '1900-01-01' AND release_date < '2100-01-01'),
-	CONSTRAINT profits_check CHECK (profits > 0),
-	CONSTRAINT last_update_profit_check CHECK (last_update_profit > '2000-01-01' AND last_update_profit < '2100-01-01')
+	CONSTRAINT profits_check CHECK (profits >= 0),
+	CONSTRAINT last_update_profits_check CHECK (last_update_profits >= '2000-01-01' AND last_update_profits <= NOW())
 );
 -- trigger : a l'ajout d'une ligne, met automatiquement profits à 0 et last_update_profits à NOW()
 -- trigger : BEFORE insert/update, update 0-n ligne dans la table PaymentRecords en fonction de la Participation de tous les artistes y ayant joué
@@ -105,28 +106,28 @@ CREATE TABLE Proposals
 CREATE TABLE ProducerContracts
 (   
     proposal_id INTEGER,
-    contract_start DATE,
-    contract_end DATE CHECK(contract_end > contract_start),
+    represent_start DATE,
+    represent_end DATE CHECK(represent_end > represent_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
     installments_number INTEGER NOT NULL,
     is_amendment BOOLEAN,
     incentive NUMERIC(6, 4), --0.0001% 
-    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, contract_start),
+    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, represent_start),
     CONSTRAINT ProContracts_proposal_id_fk FOREIGN KEY (proposal_id) REFERENCES project_db_2021.Proposals (proposal_id)
 );
 
 CREATE TABLE PaymentRecords
 (
     proposal_id INTEGER, 
-    contract_start DATE, 
+    represent_start DATE, 
     payment_number INTEGER, 
     amount NUMERIC(12,2) NOT NULL CHECK (amount >=0), 
     payment_status payments_status_type NOT NULL, 
     date_planned DATE NOT NULL, 
     date_paid DATE, 
     is_incentive BOOLEAN NOT NULL,
-    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, contract_start, payment_number),
-    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start)
+    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, represent_start, payment_number),
+    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, represent_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, represent_start)
 );
 
 CREATE TABLE Agents (
@@ -144,31 +145,31 @@ CREATE TABLE Agents (
 	CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
 	CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
 	CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
-	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[0-9]{2,8}$')
+	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$')
 );
 
 CREATE TABLE AgencyContracts(
 	contact_id INT NOT NULL,
-	start_date DATE NOT NULL,	-- contract_start
-	end_date DATE,				--contract_end
+	contract_start DATE NOT NULL,
+	contract_end DATE,
 	fee NUMERIC(6,4) NOT NULL,
-	CONSTRAINT AgencyContracts_pkey PRIMARY KEY (contact_id, start_date),
+	CONSTRAINT AgencyContracts_pkey PRIMARY KEY (contact_id, contract_start),
 	CONSTRAINT agency_contracts_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
-	CONSTRAINT start_date_check CHECK (start_date > '2000-01-01' AND start_date < '2100-01-01'),
-	CONSTRAINT end_date_check CHECK (end_date > start_date AND end_date < '2100-01-01'),
+	CONSTRAINT contract_start_check CHECK (contract_start > '1900-01-01' AND contract_start < '2100-01-01'),
+	CONSTRAINT contract_end_check CHECK (contract_end > contract_start AND contract_end < '2100-01-01'),
 	CONSTRAINT fee_check CHECK (fee > 0 AND fee < 100)
 );
 
 CREATE TABLE AgentRecords(
 	agent_id INT NOT NULL,
 	contact_id INT NOT NULL,
-	start_date DATE NOT NULL, -- represent_start
-	end_date DATE,				-- represent_end
+	represent_start DATE NOT NULL,
+	represent_end DATE,
 	CONSTRAINT AgentRecord_pkey PRIMARY KEY (agent_id, contact_id),
 	CONSTRAINT agent_record_agent_id_fkey FOREIGN KEY (agent_id) REFERENCES project_db_2021.Agents (agent_id),
 	CONSTRAINT agent_record_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
-	CONSTRAINT start_date_check CHECK (start_date > '2000-01-01' AND start_date < '2100-01-01'),
-	CONSTRAINT end_date_check CHECK (end_date > start_date AND end_date < '2100-01-01')
+	CONSTRAINT represent_start_check CHECK (represent_start > '2000-01-01' AND represent_start < '2100-01-01'),
+	CONSTRAINT represent_end_check CHECK (represent_end > represent_start AND represent_end < '2100-01-01')
 );
 
 

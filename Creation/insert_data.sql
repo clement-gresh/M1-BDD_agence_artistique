@@ -32,34 +32,36 @@ SELECT * FROM contacts LIMIT 5;
 
 --Requests
 --insert data of requests randomly
--- CREATE OR REPLACE FUNCTION insert_reuqests() RETURNS void AS $$
--- DECLARE
---     i INTEGER; --330 open
---     j INTEGER; --330 close
---     k INTEGER; --340 pending
---     nb_contacts INTEGER;
--- BEGIN
---     nb_contacts := (SELECT count(*) from contacts)
---     FOR i IN (SELECT contact_id from contacts ORDER BY RANDOM() LIMIT 1000)
---     LOOP
---         INSERT INTO Requests(contact_id, request_status) VALUES(i, 'open', );
---     END LOOP;
-
--- END;
--- $$ LANGUAGE plpgsql;
-
--- SELECT insert_reuqests();
--- SELECT * FROM Requests LIMIT 5;
+CREATE OR REPLACE FUNCTION insert_reuqests() RETURNS void AS $$
+DECLARE
+    i INTEGER; --330 open
+    nb_contacts INTEGER;
+BEGIN
+    nb_contacts := (SELECT count(*) from contacts);
+    FOR i IN 1..nb_contacts/3
+    LOOP
+        --the value of contact_id is between 1 and nb_contacts randomly
+        --for having more open in requests
+        --floor(...) + 1 to avoid 0
+        INSERT INTO Requests(contact_id, request_status, budget, request_end) 
+        VALUES(floor(RANDOM()*nb_contacts)+1, (ARRAY['open', 'closed', 'cancelled', 'open', 'open'])[floor(random() * 5 + 1)]::requests_status_type, RANDOM()*10000, NOW()+INTERVAL '1 day' * random()*365);
+    END LOOP;
 
 
---   request_id SERIAL CONSTRAINT Requests_request_id_pk PRIMARY KEY,
---     contact_id INTEGER NOT NULL, --trigger vérifier que contact a un skill_type : job : producteur
---     creation_id INTEGER NOT NULL, 
---     request_description TEXT NOT NULL, 
---     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),  --trigger >=0
---     request_status requests_status_type NOT NULL, 
---     request_start DATE NOT NULL, 
---     request_end DATE,
---     CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
---     CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
---     CHECK(request_end >= request_start)
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT insert_reuqests();
+SELECT * FROM Requests LIMIT 5;
+
+    -- request_id SERIAL CONSTRAINT Requests_request_id_pk PRIMARY KEY,
+    -- contact_id INTEGER NOT NULL, --trigger vérifier que contact a un skill_type : job : producteur
+    -- creation_id INTEGER, --NOT NULL, 
+    -- request_description TEXT, 
+    -- budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),  --trigger >=0
+    -- request_status requests_status_type NOT NULL, 
+    -- request_start DATE NOT NULL DEFAULT NOW(), 
+    -- request_end DATE,
+    -- CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
+    -- --CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
+    -- CHECK(request_end >= request_start)

@@ -9,7 +9,6 @@ command to execute in psql:
 
 -- Remember to remove the header from csv files
 -- Remove ' and space in names
-
 \copy Agents(email, first_name, last_name, gender, birth_date, tel, address, city, postal_code) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Agents.csv' WITH (FORMAT CSV)
 
 \copy Creations(creation_name, creation_type, release_date, profits, last_update_profits) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Creations.csv' WITH (FORMAT CSV)
@@ -18,7 +17,33 @@ UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR 
 
 \copy Skills(skill_name, skill_type) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV)
 
-SELECT * FROM Skills;
+
+-- DEBUG : LIFANG
+\copy Contacts(first_name, last_name, email, gender) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Contacts.csv' WITH (FORMAT CSV)
+
+UPDATE Contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN (SELECT contact_id FROM contacts ORDER BY RANDOM() LIMIT 1000);
+
+update Contacts set birth_date =  TO_date(to_char(  1+random() *27, '00') || '-' || to_char( 1+random() *11, '00') || '-' ||  to_char( 1925 +random() *80, '0000') ,'DD-MM-YYYY' );
+
+UPDATE Contacts SET tel= '+33' || to_char( 600000000 + random() * 200000000 + 1, 'FM999999999') ;
+ALTER TABLE Contacts ALTER COLUMN tel SET NOT NULL;
+
+-- 1+random()*99 genere des ##
+UPDATE Contacts SET address = to_char(  1+random()*98, '00') || ' rue de ' || last_name;
+
+UPDATE Contacts SET postal_code = floor(11+random() *99999);
+
+update Contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chicago', 
+                                   'London', 'Berlin', 'Tokyo', 'New York', 'Marseille', 
+                                   'Toulouse', 'Nice', 'Los Angeles', 'Versailles', 'Houston', 
+                                   'Seoul', 'Seattle', 'Manchester', 'Toronto', 'Prague'
+                                   'Taipei', 'Havana', 'New Delhi', 'Rome', 'Manila',
+                                   'Moscow', 'Sydney', 'Dubai', 'Madrid', 'Osaka'])[floor(random() * 30 + 1)];
+
+-- FIN DEBUG : LIFANG
+
+
+
 
 /*
 -- "C:\Users\Clem\01-coding-projects\08-sql-projects\projet-bdd-2021\Creation\Agents.csv"

@@ -25,11 +25,6 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
                                    'Moscow', 'Sydney', 'Dubai', 'Madrid', 'Osaka'])[floor(random() * 30 + 1)];
 SELECT * FROM contacts LIMIT 5;
 
--- Requests
--- INSERT INTO requests
--- => CHECK PRODCONTACT has skill procuder , else give it to him
--- INSERT ON REQUIREDSKILL
-
 --Requests
 --insert data of requests randomly
 CREATE OR REPLACE FUNCTION insert_reuqests() RETURNS void AS $$
@@ -46,8 +41,6 @@ BEGIN
         INSERT INTO Requests(contact_id, request_status, budget, request_end) 
         VALUES(floor(RANDOM()*nb_contacts)+1, (ARRAY['open', 'closed', 'cancelled', 'open', 'open'])[floor(random() * 5 + 1)]::requests_status_type, RANDOM()*10000, NOW()+INTERVAL '1 day' * random()*365);
     END LOOP;
-
-
 END;
 $$ LANGUAGE plpgsql;
 

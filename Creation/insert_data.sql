@@ -49,3 +49,5 @@ SELECT insert_producercontracts();
 SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
 
 --PaymentRecords
+SELECT insert_paymentrecords();
+SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;

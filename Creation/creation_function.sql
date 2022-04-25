@@ -29,3 +29,29 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+--RequiredSkills
+CREATE OR REPLACE FUNCTION insert_requiredskills() RETURNS void AS $$
+DECLARE
+    i INTEGER;
+    j INTEGER;
+    nb_requests INTEGER;
+    skid INTEGER;
+    tmp INTEGER;
+BEGIN
+    nb_requests := (SELECT count(*) from requests);
+    FOR i IN 1..nb_requests
+    LOOP
+        SELECT skill_id INTO skid FROM skills ORDER BY RANDOM() LIMIT 1;
+        tmp := skid;
+        IF (i, tmp) NOT IN (SELECT request_id, skill_id FROM RequiredSkills) THEN
+            INSERT INTO RequiredSkills(request_id, skill_id) 
+            VALUES(i, skid);
+        ELSE
+            SELECT skill_id INTO skid FROM skills ORDER BY RANDOM() LIMIT 1;
+            INSERT INTO RequiredSkills(request_id, skill_id) 
+            VALUES(i, skid);
+        END IF; 
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;

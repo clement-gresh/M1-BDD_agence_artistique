@@ -109,6 +109,7 @@ BEGIN
     UPDATE ProducerContracts SET incentive = CASE WHEN is_amendment = True AND installments_number !=0 THEN (RANDOM()*0.1) ELSE 0.00 END;
 END;
 $$ LANGUAGE plpgsql;
+
 --trigger : contract_end <= release_date
 
 --PaymentRecords

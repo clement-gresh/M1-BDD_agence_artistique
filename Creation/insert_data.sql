@@ -41,6 +41,11 @@ SELECT * FROM RequiredSkills ORDER BY RANDOM() LIMIT 5;
 --contacts => request => requiresSkill => proposal => ProducerContracts => PaymentRecords
 
 --Proposals
+SELECT insert_proposals();
+SELECT * FROM Proposals ORDER BY RANDOM() LIMIT 5;
 
 --ProducerContracts
+SELECT insert_producercontracts();
+SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
+
 --PaymentRecords

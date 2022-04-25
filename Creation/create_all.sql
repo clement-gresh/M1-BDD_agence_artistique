@@ -13,11 +13,15 @@ CREATE TYPE payments_status_type AS ENUM ('done', 'todo', 'cancelled');
 CREATE TYPE creation_type AS ENUM ('album', 'song', 'play', 'movie', 'TV show', 'commercial', 'concert', 'book');
 CREATE TYPE skill_type_type AS ENUM ('job', 'instrument', 'language', 'style');
 CREATE TYPE skill_name_type AS ENUM (
-	'writer', 'musician', 'singer', 'actor', 'director', 'producer',
+	'writer', 'musician', 'singer', 'actor', 'director', 'producer', 
+	'comedian', 'soprano', 'tenor', 'bass', 'baritone', 'alto', 'mezzo-soprano',
 	'violin', 'guitar', 'saxophone', 'piano', 'trumpet', 'flute',
+	'keyboard', 'french-horn', 'drums', 'electric-guitar', 'accordion', 'cello', 'clarinet', 'bagpipes', 'bugle', 'harmonica',
+	'harp', 'organ', 'pan-flute', 'sitar', 'tambourine', 'triangle', 'trombone', 'tuba', 'ukulele', 'xylophone',
 	'french', 'english', 'arabic', 'spanish', 'german', 'italian', 'mandarin', 'hindi', 'japanese',
 	'jazz', 'classical', 'RandB', 'rock', 'soul', 'rap', 'slam', 'metal'
 );
+
 
 -- TABLES
 CREATE TABLE Contacts 
@@ -92,9 +96,9 @@ CREATE TABLE RequiredSkills
 CREATE TABLE Proposals
 (
     proposal_id SERIAL CONSTRAINT Proposals_proposal_id_pk PRIMARY KEY, 
-    request_id INTEGER, 
-    contact_id INTEGER,  --artist
-    proposals_status proposals_status_type NOT NULL, --trigger BEFORE insert/update
+    request_id INTEGER NOT NULL, 
+    contact_id INTEGER NOT NULL,  --artist
+    proposal_status proposals_status_type NOT NULL, --trigger BEFORE insert/update : ('rejected', 'accpeted', 'pending');
     proposed_date DATE, --trigger request_end > proposed_date > request_date
     CONSTRAINT Proposals_request_id_fk FOREIGN KEY (request_id) REFERENCES project_db_2021.Requests (request_id),
     CONSTRAINT Proposals_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id)
@@ -103,28 +107,28 @@ CREATE TABLE Proposals
 CREATE TABLE ProducerContracts
 (   
     proposal_id INTEGER,
-    represent_start DATE,
-    represent_end DATE CHECK(represent_end > represent_start),
+    contract_start DATE,
+    contract_end DATE CHECK(contract_end > contract_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
     installments_number INTEGER NOT NULL,
     is_amendment BOOLEAN,
     incentive NUMERIC(6, 4), --0.0001% 
-    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, represent_start),
+    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, contract_start),
     CONSTRAINT ProContracts_proposal_id_fk FOREIGN KEY (proposal_id) REFERENCES project_db_2021.Proposals (proposal_id)
 );
 
 CREATE TABLE PaymentRecords
 (
     proposal_id INTEGER, 
-    represent_start DATE, 
+    contract_start DATE, 
     payment_number INTEGER, 
     amount NUMERIC(12,2) NOT NULL CHECK (amount >=0), 
     payment_status payments_status_type NOT NULL, 
     date_planned DATE NOT NULL, 
     date_paid DATE, 
     is_incentive BOOLEAN NOT NULL,
-    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, represent_start, payment_number),
-    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, represent_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, represent_start)
+    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, contract_start, payment_number),
+    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start)
 );
 
 CREATE TABLE Agents (

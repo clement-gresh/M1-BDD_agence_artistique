@@ -34,24 +34,22 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION insert_requiredskills() RETURNS void AS $$
 DECLARE
     i INTEGER;
-    j INTEGER;
     nb_requests INTEGER;
     skid INTEGER;
-    tmp INTEGER;
+    ran INTEGER;
 BEGIN
     nb_requests := (SELECT count(*) from requests);
     FOR i IN 1..nb_requests
     LOOP
-        SELECT skill_id INTO skid FROM skills ORDER BY RANDOM() LIMIT 1;
-        tmp := skid;
-        IF (i, tmp) NOT IN (SELECT request_id, skill_id FROM RequiredSkills) THEN
-            INSERT INTO RequiredSkills(request_id, skill_id) 
-            VALUES(i, skid);
-        ELSE
-            SELECT skill_id INTO skid FROM skills ORDER BY RANDOM() LIMIT 1;
-            INSERT INTO RequiredSkills(request_id, skill_id) 
-            VALUES(i, skid);
-        END IF; 
+        -- skid = random job
+        skid := (SELECT skill_id from skills where skill_type = 'job'  ORDER BY RANDOM() LIMIT 1);
+        INSERT INTO RequiredSkills(request_id, skill_id) VALUES(i, skid);              
+            
+        -- insert 1 to 3 non job skill (1-3 lignes)
+        ran := random()*3 +1; 
+        INSERT INTO RequiredSkills(request_id, skill_id)          
+        SELECT i, skill_id FROM skills where skill_id != skid ORDER BY RANDOM() LIMIT ran; 
+     
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
@@ -105,12 +103,23 @@ BEGIN
         END IF;
     END LOOP;
     UPDATE ProducerContracts SET contract_end = NOW() + '1 day'::INTERVAL*ran WHERE proposal_id in (SELECT proposal_id FROM proposals WHERE proposal_status = 'accpeted' ORDER BY RANDOM() LIMIT 1000);
-    UPDATE ProducerContracts SET is_amendment = CASE WHEN proposal_id in (SELECT proposal_id FROM proposals WHERE proposal_status = 'accpeted' ORDER BY RANDOM() LIMIT 500) THEN True ELSE False END;
+    UPDATE ProducerContracts SET is_amendment = CASE WHEN proposal_id in ( select proposal_id from producercontracts group by proposal_id having count(*) >1) THEN True ELSE False END;
     UPDATE ProducerContracts SET incentive = CASE WHEN is_amendment = True AND installments_number !=0 THEN (RANDOM()*0.1) ELSE 0.00 END;
 END;
 $$ LANGUAGE plpgsql;
+trigger : contract_end <= release_date
 
---trigger : contract_end <= release_date
+--PaymentRecords
+-- CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
+-- DECLARE
+--     i INTEGER;
+-- BEGIN
+
+--     FOR i IN 1..
+
+--     END LOOP;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 --PaymentRecords
 --   proposal_id INTEGER, 

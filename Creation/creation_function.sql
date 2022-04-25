@@ -59,23 +59,33 @@ CREATE OR REPLACE FUNCTION insert_proposals() RETURNS void AS $$
 DECLARE
     i INTEGER;
     nb_requests INTEGER;
+    nb_contacts INTEGER;
     rid INTEGER;
     cid INTEGER;
     ran INTEGER;
 BEGIN
     nb_requests := (SELECT count(*) from requests);
-    FOR i IN 1..nb_requests
+    nb_contacts := (SELECT count(*) from contacts);
+    -- on cree nb_request * 2 propositions
+    FOR i IN 1..nb_requests*2
     LOOP
-        ran := floor(RANDOM()*90);
-        SELECT request_id INTO rid FROM requests ORDER BY RANDOM() LIMIT 1;
-        SELECT contact_id INTO cid FROM contacts ORDER BY RANDOM() LIMIT 1;
-        INSERT INTO Proposals(request_id, contact_id, proposal_status, proposed_date) 
-        VALUES (rid, cid, (ARRAY['rejected', 'accpeted', 'accpeted', 'pending', 'pending'])[floor(random()*4+1)]::proposals_status_type, NOW() - '1 day'::INTERVAL * ran);
+        ran := floor(RANDOM()*90); -- for generating date randomly
+        rid := floor(nb_requests*random() +1);
+        cid := floor(nb_contacts*random() +1);
+        IF rid IN (SELECT request_id FROM Proposals) THEN
+            INSERT INTO Proposals(request_id, contact_id, proposal_status, proposed_date) 
+            VALUES (rid, cid, (ARRAY['rejected', 'pending', 'pending'])[floor(random()*2+1)]::proposals_status_type, NOW() - '1 day'::INTERVAL * ran);
+        ELSE 
+            -- unique accepted per reuqest
+            INSERT INTO Proposals(request_id, contact_id, proposal_status, proposed_date) 
+            VALUES (rid, cid, 'accepted'::proposals_status_type, NOW() - '1 day'::INTERVAL * ran);        
+
+        END IF;
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 
-
+--ProducerContracts
 --ProducerContracts
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
 DECLARE
@@ -86,30 +96,65 @@ DECLARE
     ran INTEGER;
     dat DATE;
 BEGIN
-    nb_proposals_accpeted := (SELECT count(*) FROM proposals WHERE proposal_status = 'accpeted');
+    nb_proposals_accpeted := (SELECT count(*) FROM proposals WHERE proposal_status = 'accepted');
     FOR i IN 1..nb_proposals_accpeted
     LOOP
         ran := floor(RANDOM()*365);
         dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
-        nb_payment := floor(RANDOM()*10);
-        SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accpeted' ORDER BY RANDOM() LIMIT 1;
+        nb_payment := floor(RANDOM()*10+1);
+        
+        SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
+        
         IF (pid, dat) NOT IN (SELECT proposal_id, contract_start FROM producercontracts)
         THEN
-            INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary) 
-            VALUES (pid, dat, nb_payment, CASE WHEN nb_payment != 0 THEN 100 + RANDOM()*5000 ELSE 0 END);
+            INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary,contract_end,is_amendment,incentive) 
+            VALUES (pid, dat, nb_payment, 
+                    CASE WHEN nb_payment != 0 THEN 100 + RANDOM()*5000 ELSE 0 END,
+                    NOW() + '1 day'::INTERVAL*ran,
+                    CASE WHEN pid in (SELECT proposal_id FROM ProducerContracts ) THEN True ELSE False END,
+                    CASE WHEN nb_payment !=0 and RANDOM() <0.1  THEN (RANDOM()*0.1) ELSE 0.00 END
+                   );
         ELSE
-            SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accpeted' ORDER BY RANDOM() LIMIT 1;
-            dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
+            i=i-1;
         END IF;
+        
     END LOOP;
-    UPDATE ProducerContracts SET contract_end = NOW() + '1 day'::INTERVAL*ran WHERE proposal_id in (SELECT proposal_id FROM proposals WHERE proposal_status = 'accpeted' ORDER BY RANDOM() LIMIT 1000);
-    UPDATE ProducerContracts SET is_amendment = CASE WHEN proposal_id in ( select proposal_id from producercontracts group by proposal_id having count(*) >1) THEN True ELSE False END;
-    UPDATE ProducerContracts SET incentive = CASE WHEN is_amendment = True AND installments_number !=0 THEN (RANDOM()*0.1) ELSE 0.00 END;
 END;
 $$ LANGUAGE plpgsql;
-trigger : contract_end <= release_date
 
---PaymentRecords
+-- CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
+-- DECLARE
+--     i INTEGER;
+--     nb_proposals_accpeted INTEGER;
+--     nb_payment INTEGER;
+--     pid INTEGER;
+--     ran INTEGER;
+--     dat DATE;
+--     nb_proposals_accpeted := (SELECT count(*) FROM proposals WHERE proposal_status = 'accepted');
+--     FOR i IN 1..nb_proposals_accepted
+--     LOOP
+        
+--         dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
+--         nb_payment := floor(RANDOM()*10);
+--         SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
+--         IF (pid, dat) NOT IN (SELECT proposal_id, contract_start FROM producercontracts)
+--         THEN
+--             INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary) 
+--             VALUES (pid, dat, nb_payment, CASE WHEN nb_payment != 0 THEN 100 + RANDOM()*5000 ELSE 0 END);
+--         ELSE
+--             SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
+--             dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
+--         END IF;
+--     END LOOP;
+--     ran := floor(1 + RANDOM()*365);
+--     UPDATE ProducerContracts SET contract_end = NOW() + '1 day'::INTERVAL*ran WHERE proposal_id in (SELECT proposal_id FROM proposals WHERE proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1000);
+--     UPDATE ProducerContracts SET is_amendment = CASE WHEN proposal_id in ( select proposal_id from producercontracts group by proposal_id having count(*) >1) THEN True ELSE False END;
+--     UPDATE ProducerContracts SET incentive = CASE WHEN is_amendment = True AND installments_number !=0 THEN (RANDOM()*0.1) ELSE 0.00 END;
+-- END;
+-- $$ LANGUAGE plpgsql;
+-- trigger : contract_end <= release_date
+
+-- --PaymentRecords
 -- CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
 -- DECLARE
 --     i INTEGER;

@@ -33,21 +33,3 @@ SELECT * FROM Requests ORDER BY RANDOM() LIMIT 5;
 --Skills
 COPY Skills(skill_name, skill_type) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV);
 SELECT * FROM Skills ORDER BY RANDOM() LIMIT 5;
-
---RequiredSkills
-SELECT insert_requiredskills();
-SELECT * FROM RequiredSkills ORDER BY RANDOM() LIMIT 5;
-
---contacts => request => requiresSkill => proposal => ProducerContracts => PaymentRecords
-
---Proposals
-SELECT insert_proposals();
-SELECT * FROM Proposals ORDER BY RANDOM() LIMIT 5;
-
---ProducerContracts
-SELECT insert_producercontracts();
-SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
-
---PaymentRecords
-SELECT insert_paymentrecords();
-SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;

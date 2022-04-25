@@ -7,7 +7,7 @@ SET datestyle = GERMAN, YMD;
 
 -- TYPES
 CREATE TYPE gender_type AS ENUM ('M', 'F', 'Nb', 'None');
-CREATE TYPE proposals_status_type AS ENUM ('rejected', 'accpeted', 'pending');
+CREATE TYPE proposals_status_type AS ENUM ('rejected', 'accepted', 'pending');
 CREATE TYPE requests_status_type AS ENUM ('open', 'closed', 'cancelled');
 CREATE TYPE payments_status_type AS ENUM ('done', 'todo', 'cancelled');
 CREATE TYPE creation_type AS ENUM ('album', 'song', 'play', 'movie', 'TV show', 'commercial', 'concert', 'book');

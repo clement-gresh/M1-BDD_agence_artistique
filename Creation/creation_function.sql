@@ -86,7 +86,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 --ProducerContracts
---ProducerContracts
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
 DECLARE
     i INTEGER;
@@ -122,49 +121,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
--- DECLARE
---     i INTEGER;
---     nb_proposals_accpeted INTEGER;
---     nb_payment INTEGER;
---     pid INTEGER;
---     ran INTEGER;
---     dat DATE;
---     nb_proposals_accpeted := (SELECT count(*) FROM proposals WHERE proposal_status = 'accepted');
---     FOR i IN 1..nb_proposals_accepted
---     LOOP
-        
---         dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
---         nb_payment := floor(RANDOM()*10);
---         SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
---         IF (pid, dat) NOT IN (SELECT proposal_id, contract_start FROM producercontracts)
---         THEN
---             INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary) 
---             VALUES (pid, dat, nb_payment, CASE WHEN nb_payment != 0 THEN 100 + RANDOM()*5000 ELSE 0 END);
---         ELSE
---             SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
---             dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
---         END IF;
---     END LOOP;
---     ran := floor(1 + RANDOM()*365);
---     UPDATE ProducerContracts SET contract_end = NOW() + '1 day'::INTERVAL*ran WHERE proposal_id in (SELECT proposal_id FROM proposals WHERE proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1000);
---     UPDATE ProducerContracts SET is_amendment = CASE WHEN proposal_id in ( select proposal_id from producercontracts group by proposal_id having count(*) >1) THEN True ELSE False END;
---     UPDATE ProducerContracts SET incentive = CASE WHEN is_amendment = True AND installments_number !=0 THEN (RANDOM()*0.1) ELSE 0.00 END;
--- END;
--- $$ LANGUAGE plpgsql;
--- trigger : contract_end <= release_date
-
--- --PaymentRecords
--- CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
--- DECLARE
---     i INTEGER;
--- BEGIN
-
---     FOR i IN 1..
-
---     END LOOP;
--- END;
--- $$ LANGUAGE plpgsql;
+--insert_payments
+CREATE OR REPLACE FUNCTION insert_payments() RETURNS void AS $$
+DECLARE
+    i INTEGER;
+    j INTEGER;
+    pid integer;
+    nb_contracts INTEGER;
+    nb_payment INTEGER;
+    amount NUMERIC(12,2);
+    dat DATE;
+    c_product CURSOR  FOR 
+        SELECT 
+            proposal_id,installments_number,salary, contract_start
+        FROM 
+            ProducerContracts 
+        WHERE 
+            (proposal_id,contract_start) in ( select proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
+        ORDER BY 
+            proposal_id ;
+BEGIN
+    open c_product;
+    LOOP
+        FETCH c_product INTO pid, nb_payment,amount,dat;
+        EXIT WHEN NOT FOUND;
+        for j in 1..nb_payment
+        LOOP
+            raise notice 'Exécuté à % % %', pid, nb_payment,amount;
+            INSERT INTO paymentrecords(
+                proposal_id , 
+                contract_start , 
+                payment_number , 
+                amount , 
+                payment_status, 
+                date_planned,
+                is_incentive) 
+            VALUES (pid, dat, j, 
+                    amount/nb_payment,
+                   'todo'::payments_status_type,
+                    dat + '1 month'::INTERVAL*j,
+                    false
+                   );
+        END LOOP;       
+    END LOOP;
+close c_product;
+END;
+$$ LANGUAGE plpgsql;
 
 --PaymentRecords
 --   proposal_id INTEGER, 

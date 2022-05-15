@@ -16,6 +16,7 @@ ALTER TABLE contacts ALTER COLUMN tel SET NOT NULL;
 UPDATE contacts SET address = to_char(  1+random()*98, '00') || ' rue de ' || last_name;
 
 UPDATE contacts SET postal_code = 1+random() *99999;
+-- debug : remplacer par floor(11+random() *99999); pour eviter code postal decimal ou a 1 seul chiffre
 
 update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chicago', 
                                    'London', 'Berlin', 'Tokyo', 'New York', 'Marseille', 

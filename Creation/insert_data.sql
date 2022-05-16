@@ -8,6 +8,7 @@ UPDATE contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN 
 UPDATE contacts SET birth_date =  TO_date(to_char(  1+random() *27, '00') || '-' || to_char( 1+random() *11, '00') || '-' ||  to_char( 1925 +random() *80, '0000') ,'DD-MM-YYYY' );
 UPDATE contacts SET tel= '+33' || to_char( 600000000 + random() * 200000000 + 1, 'FM999999999') ;
 ALTER TABLE contacts ALTER COLUMN tel SET NOT NULL;
+
 UPDATE contacts SET address = to_char(  1+random()*98, '00') || ' rue de ' || last_name; -- 1+random()*98 avoid generating ##
 UPDATE contacts SET postal_code = floor( 10001 + random() * 89999); --10001 avoid generating 0
 update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chicago', 'London', 'Berlin', 'Tokyo', 'New York', 'Marseille', 

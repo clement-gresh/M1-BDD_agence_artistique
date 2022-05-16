@@ -21,9 +21,6 @@ UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR 
 -- Skills
 \copy Skills(skill_name, skill_type) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV)
 
--- KnownSkills
-
-
 
 -- DEBUG : LIFANG
 -- Contacts
@@ -43,6 +40,9 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
 
 -- debug : remplacer par floor(11+random() *99999); pour eviter code postal decimal ou a 1 seul chiffre
 -- FIN DEBUG : LIFANG
+
+-- KnownSkills
+\copy KnownSkills(contact_id, skill_id) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/KnownSkills.csv' WITH (FORMAT CSV)
 
 
 -- AgencyContracts

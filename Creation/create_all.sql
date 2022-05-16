@@ -193,5 +193,5 @@ CREATE TABLE KnownSkills(
 );
 
 
-\i insert_data.sql
+-- \i insert_data.sql
 

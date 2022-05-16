@@ -1,3 +1,30 @@
+-- Creations : a l'ajout d'une ligne, met automatiquement profits à 0 et last_update_profits à NOW()
+CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
+	BEGIN
+		SET NEW.profits = 0;
+		SET last_update_profits = NOW;
+	END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER Creations_profits
+AFTER INSERT ON Creations
+FOR EACH ROW
+WHEN NEW.profits != 0
+EXECUTE PROCEDURE profits_1_null();
+
+-- Creations : BEFORE insert/update, update 0-n ligne dans la table PaymentRecords en fonction de la Participation de tous les artistes y ayant joué
+/*CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
+	BEGIN
+		INSERT INTO PaymentRecords
+			SELECT 
+	END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER Creations_profits_payment
+AFTER INSERT OR UPDATE Creations
+FOR EACH ROW
+WHEN NEW.profits != 0
+EXECUTE PROCEDURE profits_2_payment()*/
 
 -- Involvments : checks that the skills referenced in this table are of type 'job'
 CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$

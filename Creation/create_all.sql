@@ -51,9 +51,6 @@ CREATE TABLE Creations(
 	CONSTRAINT profits_check CHECK (profits >= 0),
 	CONSTRAINT last_update_profits_check CHECK (last_update_profits >= '2000-01-01' AND last_update_profits <= NOW())
 );
--- trigger : a l'ajout d'une ligne, met automatiquement profits à 0 et last_update_profits à NOW()
--- trigger : BEFORE insert/update, update 0-n ligne dans la table PaymentRecords en fonction de la Participation de tous les artistes y ayant joué
-
 
 CREATE TABLE Requests
 (

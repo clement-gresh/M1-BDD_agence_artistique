@@ -1,6 +1,5 @@
 -- TRIGGERS
-
--- fonction check si un contrat est en cours pour un contactid - utilisee pour le trigger 
+-- fonction check si un contrat est en cours pour un contactid - utilisée pour le trigger 
 CREATE OR REPLACE FUNCTION has_current_contract(contactid INT, dat timestamp with time zone) RETURNS BOOLEAN AS $$
     DECLARE 
       nb INT;
@@ -22,7 +21,7 @@ CREATE OR REPLACE FUNCTION has_current_contract(contactid INT, dat timestamp wit
 $$ LANGUAGE plpgsql;
 
 
--- AgencyContracts : can only create a new contract if the address of the artist is know and if a contract is not already ongoing
+--TRIGGER pour table contacts
 CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
    DECLARE 
       nb INT;
@@ -30,7 +29,7 @@ CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
 		--RAISE NOTICE 'TRIGGER check_address_if_agent % % %',new.contact_id,new.contract_start,new.contract_end;
         -- si une ligne existe dans nb, c'est qu'un contrat est déja en cours !
         IF (has_current_contract(new.contact_id,new.contract_start)=true) or (has_current_contract(new.contact_id,new.contract_end)=true)  THEN			
-            RAISE NOTICE 'Rejected line because a contract is currently in progress for this client contact id : % => % (%) - % (%)',new.contact_id,new.contract_start,has_current_contract(new.contact_id,new.contract_start),new.contract_end,has_current_contract(new.contact_id,new.contract_end);
+            RAISE NOTICE 'Rejected line because a contrat is currently in progress for this client contact id : % => % (%) - % (%)',new.contact_id,new.contract_start,has_current_contract(new.contact_id,new.contract_start),new.contract_end,has_current_contract(new.contact_id,new.contract_end);
             RETURN NULL;
         END IF;
         
@@ -50,34 +49,36 @@ CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER address_agent
+CREATE TRIGGER address_agent
 BEFORE INSERT ON agencycontracts
 FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
 
 
+--TRIGGER
 --Requests : check request_start < Creations[release_date] AND request_end < Creations[release_date]
 CREATE OR REPLACE FUNCTION check_request_date() RETURNS TRIGGER AS $$
-    DECLARE
-        dat date:=( SELECT release_date FROM creations WHERE creation_id=new.creation_id );
+	DECLARE
+		dat date:=( SELECT release_date FROM creations WHERE creation_id=new.creation_id );
     BEGIN
         -- si la nouvelle request que l'on insert a une date de debut ou de fin superieure a la date de release de la creation
         if new.request_start > dat OR
-        new.request_end > dat
-        then 
-            RAISE NOTICE 'Rejected line because the date of request ("%", "%") T4.', NEW.request_start, NEW.request_end;
+		new.request_end > dat
+		then 
+            RAISE NOTICE 'Rejected line because the date of request ("%", "%") - Release : %', NEW.request_start, NEW.request_end,dat;
             RETURN NULL;                
         end if;         
         RETURN NEW;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Requests_reuqests_date_trigger
+CREATE TRIGGER requests_date_trigger
 BEFORE INSERT OR UPDATE ON Requests
 FOR EACH ROW
 EXECUTE PROCEDURE check_request_date();
 
 
+-- TRIGGER Clément
 -- Involvments : checks that the skills referenced in this table are of type 'job'
 CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
    DECLARE 
@@ -97,10 +98,11 @@ CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Involvments_is_skill_job_trigger
+CREATE TRIGGER Involvments_is_skill_job_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE is_skill_job();
+
 
 
 -- Involvments : checks in KnownSkills that the artist has the skill referenced here
@@ -123,10 +125,11 @@ CREATE OR REPLACE FUNCTION has_skill() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Involvments_has_skill_trigger
+CREATE TRIGGER Involvments_has_skill_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE has_skill();
+-- debug : est-ce toutes les skills de chaque artiste apparraissent ? Ou faut-il LEFT/RIGHT JOIN ?
 
 -- KnownSkills : checks that only a musician or singer can have a skill of type 'instrument' or 'style'
 CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
@@ -162,7 +165,7 @@ CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER KnownSkills_is_musician_trigger
+CREATE TRIGGER KnownSkills_is_musician_trigger
 BEFORE INSERT OR UPDATE ON KnownSkills
 FOR EACH ROW
 EXECUTE PROCEDURE is_musician();
@@ -176,7 +179,7 @@ CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Creations_profits
+CREATE TRIGGER Creations_profits
 BEFORE INSERT ON Creations
 FOR EACH ROW
 WHEN (NEW.profits = NULL)
@@ -235,8 +238,8 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Creations_profits_payment
-AFTER UPDATE ON Creations
+CREATE TRIGGER Creations_profits_payment
+AFTER UPDATE ON Creations -- debug : add INSERT ? But then cannot use old so might need to do another trigger
 FOR EACH ROW
 WHEN (NEW.profits != 0)
 EXECUTE PROCEDURE profits_2_payment();

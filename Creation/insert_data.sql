@@ -23,7 +23,7 @@ SELECT * FROM Agents ORDER BY RANDOM() LIMIT 5;
 \COPY Creations(creation_name, creation_type, release_date, profits, last_update_profits) FROM './Creations.csv' WITH (FORMAT CSV);
 UPDATE Creations SET profits = 0 WHERE  release_date > NOW();
 UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR last_update_profits < release_date);
-SELECT * FROM Creations ORDER BY RANDOM() LIMIT 5;
+SELECT * FROM Creations ORDER BY random() LIMIT 5;
 
 --Skills
 \COPY Skills(skill_name, skill_type) FROM './Skills.csv' WITH (FORMAT CSV);
@@ -47,6 +47,10 @@ UPDATE AgencyContracts SET contract_end = NULL WHERE contract_end = '2099-01-01'
 SELECT insert_requiredskills();
 SELECT * FROM RequiredSkills ORDER BY random() LIMIT 5;
 
+--Skills
+\COPY Skills(skill_name, skill_type) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV);
+SELECT * FROM Skills ORDER BY random() LIMIT 5;
+ 
 -- AgentRecords
 \COPY AgentRecords(agent_id, contact_id, represent_start, represent_end) FROM './AgentRecords.csv' WITH (FORMAT CSV);
 UPDATE AgentRecords SET represent_end = NULL WHERE represent_end >  NOW();
@@ -59,7 +63,7 @@ SELECT * FROM Proposals ORDER BY random() LIMIT 5;
 SELECT insert_producercontracts();
 SELECT * FROM ProducerContracts ORDER BY random() LIMIT 5;
 
---PaymentRecords
+-- --PaymentRecords
 SELECT insert_paymentrecords();
 SELECT * FROM paymentrecords ORDER BY random() LIMIT 5;
 -- mise a jour des paiements des contrats obsoletes suite aux avenants

@@ -9,13 +9,13 @@ projet-bdd-2021
 
 ### Installation 
 Pour lancer le projet, se placer dans le dossier /Creation puis utiliser les commandes suivantes :
-```
+
 - creer les tables :							        `\i create_all.sql`
 - creer les triggers :							        `\i create_triggers.sql`
 - creer les fonctions auxiliaires :				        `\i create_functions.sql`
 - inserer les donnees dans les tables :			        `\i insert_data.sql`
 - creer des triggers arpès l'insertion des données :	`\i create_triggers2.sql`
-```
+
 
 
 Pour plus de rapidite, utiliser la commande `\i launcher.sql` qui executera toutes ces actions dans l'ordre.

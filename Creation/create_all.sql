@@ -7,9 +7,9 @@ SET datestyle = GERMAN, YMD;
 
 -- TYPES
 CREATE TYPE gender_type AS ENUM ('M', 'F', 'Nb', 'None');
-CREATE TYPE proposals_status_type AS ENUM ('rejected', 'accpeted', 'pending');
+CREATE TYPE proposals_status_type AS ENUM ('rejected', 'accepted', 'pending');
 CREATE TYPE requests_status_type AS ENUM ('open', 'closed', 'cancelled');
-CREATE TYPE payments_status_type AS ENUM ('done', 'todo', 'cancelled');
+CREATE TYPE payments_status_type AS ENUM ('done', 'todo', 'cancelled','avenant');
 CREATE TYPE creation_type AS ENUM ('album', 'song', 'play', 'movie', 'TV show', 'commercial', 'concert', 'book');
 CREATE TYPE skill_type_type AS ENUM ('job', 'instrument', 'language', 'style');
 CREATE TYPE skill_name_type AS ENUM (
@@ -21,7 +21,6 @@ CREATE TYPE skill_name_type AS ENUM (
 	'french', 'english', 'arabic', 'spanish', 'german', 'italian', 'mandarin', 'hindi', 'japanese',
 	'jazz', 'classical', 'RandB', 'rock', 'soul', 'rap', 'slam', 'metal'
 );
-
 
 -- TABLES
 CREATE TABLE Contacts 
@@ -35,7 +34,7 @@ CREATE TABLE Contacts
     birth_date DATE,
     tel VARCHAR(20),  --NOT NULL : ALTER après l'inserction 
     city VARCHAR(50), 
-	address VARCHAR(200),  --Trigger : vérifier NOT NULL SI contact est represent par notre agent : verifier AgnecyContracts en cours
+	address VARCHAR(200), 
 	postal_code VARCHAR(8),
 	CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9.-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
     CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
@@ -56,6 +55,7 @@ CREATE TABLE Creations(
 	CONSTRAINT last_update_profits_check CHECK (last_update_profits >= '2000-01-01' AND last_update_profits <= NOW())
 );
 
+
 CREATE TABLE Requests
 (
     request_id SERIAL CONSTRAINT Requests_request_id_pk PRIMARY KEY,
@@ -64,7 +64,7 @@ CREATE TABLE Requests
     request_description TEXT, 
     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),
     request_status requests_status_type NOT NULL, 
-    request_start DATE NOT NULL DEFAULT NOW(), 
+    request_start DATE, 
     request_end DATE,
     CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
     CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
@@ -105,7 +105,7 @@ CREATE TABLE ProducerContracts
 (   
     proposal_id INTEGER,
     contract_start DATE,
-    contract_end DATE CHECK(contract_end > contract_start),
+    contract_end DATE CHECK(contract_end >= contract_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
     installments_number INTEGER NOT NULL,
     is_amendment BOOLEAN,
@@ -192,7 +192,14 @@ CREATE TABLE KnownSkills(
 	CONSTRAINT KnownSkills_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
 	CONSTRAINT KnownSkills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
+<<<<<<< HEAD
 
 
 -- \i insert_data.sql
+=======
+
+\i create_triggers.sql
+\i insert_data.sql
+>>>>>>> su
+
 

@@ -1,0 +1,65 @@
+
+
+1. Contacts(*contact_id, email, society, first_name, last_name, gender, birth_date, tel, address, postal_code)
+Contraintes : 
+-(1) birth_date < NOW(), NOT NULL
+-(2) email NOT NULLL, TRIGGER pour éfier le format avec une expression reguliere
+-(3) first_name, last_name, gender, tel, address, postal_code  NOT NULL
+address VARCHAR(200),  --Trigger : vérifier NOT NULL SI contact est represent par notre agent : verifier AgnecyContracts en cours
+------------------------------------------------------------------
+
+5. RequiredSkills(*#request_id, *#skill_id)
+- (1) TRIGGER :  vérifier le jod d'une demande
+
+------------------------------------------------------------------
+
+7. Creations(*creation_id, creation_name, creation_type, release_date, profits, last_update_profits) 
+Contraintes : 
+-(1) creation_name, creation_type NOT NULL
+-(2) release_date NULLABLE 
+-(3) TRIGGER : BEFORE  insert/update, update 0-n ligne dans la table PaymentRecords 
+en fonction de la Participation de tous les artistes y ayant joué
+- (4) CreationType : album, song, play, movie, TV show, concert
+------------------------------------------------------------------
+
+11. Requests(*request_id, #contact_id(producer), #creation_id, description, budget, status, request_start, request_end)
+Contraintes : 
+-(1) status = open, close, cancel
+-(2) budget NOT NULL >=0 (benevole)
+-(3) request_end > request_start (la duree de la demande)
+-(4) TRIGGER : request_start < Creations[release_date] et request_end < Creations[release_date]
+-(5) request_end NULLABLE
+-(6) request_start NOT NULL
+-(7) TRIGGER : KnownSkills : une demande doit être lier au moins une skill dont le type est Job
+------------------------------------------------------------------
+
+12. Proposals(*proposal_id, #request_id, #contact_id(artist), status, proposed_date)
+Contraintes:
+-(1) status NOT NULL : rejected, accpeted, pending
+-(2) status : Trigger BEFORE insert/update UNIQUE request_id + status = accpeted parce y'a que 1 pers peut etre accpeté par rapport à une demande
+-(3) TRIGGER : Once proposition linked to a demand is accpeted by an artist, the others propositions linked to that demand become status=rejected
+-(4) request_start < proposed_date < request_end : TRIGGER BEFORE insert/update Date Between, request_end NULLABLE
+-(5) TRIGGER : verifier que l'artiste propose a un contrat en cours ET qu'il n'a pas deja ete propose
+------------------------------------------------------------------
+
+13.  ProducerContracts(*#proposal_id, *start_date, end_date, salary, number_payments, is_amendment, incentive(%))
+Contraintes : 
+-(1) end_date > start_date 
+-(2) TRIGGER : start_date > Proposals[proposed_date]
+-(3) salary DOUBLE >= 0 
+-(4) TRIGGER : installments_number > 0, case où installments_number peut être 0 lors Requests[budget] = 0
+-(5) is_amendment boolean
+-(6) incentive DOUBLE NOT NULL >= 0
+-(7) TRIGGER : Quand on crée un AVENANT, on annule les paiements du contrat précédent n'ayant pas encore eu lieu
+-(8) TRIGGER: Chaque nouveau contrat genere des entrées de comptabilité (Pour tous les contrats)
+
+------------------------------------------------------------------
+
+14. PaymentRecords(*#proposal_id, *#start_date(contract), *payment_number, amount, status, date_planned, date_paid, is_incentive)
+Contraintes:
+-(1) amount NULLABLE > 0, CHECK NULL quand is_incentive = True
+-(2) status NOT NULL : DONE, TODO, CANCELLED
+-(3) TRIGGER : date_planned, date_paid : CHECK >= ProducerContracts[start_date] && date >= NOW()
+-(5) agency_fee >=0, artist_salary >=0
+-(6) date_planned NOT NULL
+-(7) date_paid NULLABLE

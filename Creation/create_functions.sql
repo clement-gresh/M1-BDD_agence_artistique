@@ -126,10 +126,17 @@ BEGIN
                     CASE WHEN nb_payment !=0 AND RANDOM() <0.1  THEN (RANDOM()*0.1) ELSE 0.00 END
                    );
 			-- on insert un contrat avec l'agence dans agencycontract, avec les dates appropriées au contrat
-			tz := NOW() + '1 day'::INTERVAL*ran;
+			/*
+            tz := NOW() + '1 day'::INTERVAL*ran;
 			if has_current_contract(cid,tz) = false then
 			INSERT INTO agencycontracts values(cid, dat- '1 day'::INTERVAL* RANDOM()*1000, dat+ '1 day'::INTERVAL* RANDOM()*1000 , 25*rANDom()  );
-			end if;
+			*/
+            dat := dat - '1 day'::INTERVAL* RANDOM()*1000;
+            tz := dat + '1 day'::INTERVAL* (RANDOM()*1000+1);
+			if has_current_contract(cid,dat) = false AND has_current_contract(cid,tz) = false then
+			INSERT INTO agencycontracts values(cid, dat, tz , 25*rANDom()  );
+			
+            end if;
         ELSE
             i=i-1;
         END IF;
@@ -164,7 +171,7 @@ BEGIN
         EXIT WHEN NOT FOUND;
         for j in 1..nb_payment
         LOOP
-            raise notice 'Exécuté à % % %', pid, nb_payment,amount;
+            -- raise notice 'Exécuté à % % %', pid, nb_payment,amount;
             INSERT INTO paymentrecords(
                 proposal_id , 
                 contract_start , 

@@ -8,14 +8,14 @@ CREATE OR REPLACE FUNCTION has_current_contract(contactid INT, dat date) RETURNS
 		INTO nb
 		FROM agencycontracts
 		WHERE contact_id = contactid
-			AND dat BETWEEN contract_start
-				AND contract_end;
+            AND (( dat BETWEEN contract_start AND contract_end ) 
+            OR ( dat >= contract_start AND contract_end = null));
 		
         IF (nb != 0) THEN
-			raise notice 'CONTRAT % %',contactid,dat;
+			-- raise notice 'CONTRAT % %',contactid,dat;
             return true;
         END IF;
-		raise notice 'PAS DE CONTRAT % %',contactid,dat;
+		-- raise notice 'PAS DE CONTRAT % %',contactid,dat;
 		return false;
     END;
 $$ LANGUAGE plpgsql;
@@ -48,7 +48,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER address_agent
-BEFORE INSERT OR UPDATE ON agencycontracts -- debug : enlever update ?
+BEFORE INSERT OR UPDATE ON agencycontracts
 FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
 

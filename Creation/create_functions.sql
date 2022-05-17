@@ -85,6 +85,8 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+--A vérifier
+--ProducerContracts
 
 
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
@@ -142,6 +144,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--A vérifier
 --insert_payments
 CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
 DECLARE
@@ -157,8 +160,6 @@ DECLARE
             proposal_id,installments_number,salary, signed_date
         FROM 
             ProducerContracts 
-        --WHERE 
-        --    (proposal_id,signed_date) in ( SELECT proposal_id,max(signed_date) FROM ProducerContracts group by proposal_id)
         ORDER BY 
             proposal_id ;
 BEGIN

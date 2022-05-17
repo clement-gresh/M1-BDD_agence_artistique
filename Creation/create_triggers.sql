@@ -50,7 +50,7 @@ CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER address_agent
+CREATE TRIGGER address_agent
 BEFORE INSERT ON agencycontracts
 FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
@@ -72,7 +72,7 @@ CREATE OR REPLACE FUNCTION check_request_date() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Requests_reuqests_date_trigger
+CREATE TRIGGER Requests_reuqests_date_trigger
 BEFORE INSERT OR UPDATE ON Requests
 FOR EACH ROW
 EXECUTE PROCEDURE check_request_date();
@@ -113,7 +113,7 @@ CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Involvments_is_skill_job_trigger
+CREATE TRIGGER Involvments_is_skill_job_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE is_skill_job();
@@ -139,7 +139,7 @@ CREATE OR REPLACE FUNCTION has_skill() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Involvments_has_skill_trigger
+CREATE TRIGGER Involvments_has_skill_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE has_skill();
@@ -178,7 +178,7 @@ CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER KnownSkills_is_musician_trigger
+CREATE TRIGGER KnownSkills_is_musician_trigger
 BEFORE INSERT OR UPDATE ON KnownSkills
 FOR EACH ROW
 EXECUTE PROCEDURE is_musician();
@@ -191,7 +191,7 @@ CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Creations_profits
+CREATE TRIGGER Creations_profits
 BEFORE INSERT ON Creations
 FOR EACH ROW
 WHEN (NEW.profits = NULL)
@@ -247,7 +247,7 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER Creations_profits_payment
+CREATE TRIGGER Creations_profits_payment
 AFTER UPDATE ON Creations
 FOR EACH ROW
 WHEN (NEW.profits != 0)

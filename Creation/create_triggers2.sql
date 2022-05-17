@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION validate_proposals() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER valide_annonce
+CREATE TRIGGER valide_annonce
 BEFORE INSERT OR UPDATE ON proposals
 FOR EACH ROW
 EXECUTE PROCEDURE validate_proposals();
@@ -68,7 +68,7 @@ CREATE OR REPLACE FUNCTION generate_payments() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 --/!\ 2 triggers : 1 insert 1 uppdate
-CREATE OR REPLACE TRIGGER generate_payment
+CREATE TRIGGER generate_payment
 BEFORE INSERT OR UPDATE ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments();
@@ -104,7 +104,7 @@ CREATE OR REPLACE FUNCTION generate_payments_insert() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER generate_payments_insert
+CREATE TRIGGER generate_payments_insert
 AFTER INSERT ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments_insert();

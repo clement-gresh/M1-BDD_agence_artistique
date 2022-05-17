@@ -157,7 +157,7 @@ CREATE TABLE AgencyContracts(
 	CONSTRAINT contract_end_check CHECK (contract_end > contract_start AND contract_end < '2100-01-01'),
 	CONSTRAINT fee_check CHECK (fee > 0 AND fee < 100)
 );
--- trigger : verifier que deux contrats avec le meme artiste n'ont pas cours au meme moment
+-- trigger : verifier que deux contrats avec le meme artiste n'ont pas cours au meme moment ?
 
 CREATE TABLE AgentRecords(
 	agent_id INT NOT NULL,
@@ -167,9 +167,10 @@ CREATE TABLE AgentRecords(
 	CONSTRAINT AgentRecord_pkey PRIMARY KEY (agent_id, contact_id),
 	CONSTRAINT agent_record_agent_id_fkey FOREIGN KEY (agent_id) REFERENCES project_db_2021.Agents (agent_id),
 	CONSTRAINT agent_record_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
-	CONSTRAINT represent_start_check CHECK (represent_start > '2000-01-01' AND represent_start < '2100-01-01'),
+	CONSTRAINT represent_start_check CHECK (represent_start > '1900-01-01' AND represent_start < '2035-01-01'),
 	CONSTRAINT represent_end_check CHECK (represent_end > represent_start AND represent_end < '2100-01-01')
 );
+-- trigger : verifier qu'un agent ne peut representer un artiste que quand l'artiste a un contrat en cours avec l'agence ?
 
 
 CREATE TABLE Involvments(

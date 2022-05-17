@@ -24,7 +24,6 @@ UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR 
 
 -- DEBUG : LIFANG
 -- Contacts
---Contacts
 \copy Contacts(first_name, last_name, email, gender) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Contacts.csv' WITH (FORMAT CSV)
 UPDATE contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN (SELECT contact_id FROM contacts ORDER BY RANDOM() LIMIT 1000);
 UPDATE contacts SET birth_date =  TO_date(to_char(  1+random() *27, '00') || '-' || to_char( 1+random() *11, '00') || '-' ||  to_char( 1925 +random() *80, '0000') ,'DD-MM-YYYY' );
@@ -48,6 +47,10 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
 -- AgencyContracts
 \copy AgencyContracts(contact_id, contract_start, contract_end,	fee) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/AgencyContracts.csv' WITH (FORMAT CSV)
 UPDATE AgencyContracts SET contract_end = NULL WHERE contract_end = '2099-01-01';
+
+-- AgentRecords
+\copy AgentRecords(agent_id, contact_id, represent_start, represent_end) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/AgentRecords.csv' WITH (FORMAT CSV)
+UPDATE AgentRecords SET represent_end = NULL WHERE represent_end >  NOW();
 
 /*
 -- "C:\Users\Clem\01-coding-projects\08-sql-projects\projet-bdd-2021\Creation\Agents.csv"

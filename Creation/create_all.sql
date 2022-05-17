@@ -78,7 +78,9 @@ CREATE TABLE Skills(
 	skill_type skill_type_type NOT NULL,
 	CONSTRAINT Skills_pk PRIMARY KEY (skill_id)
 );
-
+--index : on a fait des foncitons sur ces deux colonnes
+CREATE INDEX Skills_skill_name_i ON Skills (skill_name);
+CREATE INDEX Skills_skill_type_i ON Skills (skill_type);
 
 CREATE TABLE RequiredSkills
 (
@@ -100,6 +102,9 @@ CREATE TABLE Proposals
     CONSTRAINT Proposals_request_id_fk FOREIGN KEY (request_id) REFERENCES project_db_2021.Requests (request_id),
     CONSTRAINT Proposals_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id)
 );
+--index : 
+CREATE INDEX Proposals_status_i ON Proposals (proposal_status);
+
 
 CREATE TABLE ProducerContracts
 (   
@@ -108,26 +113,29 @@ CREATE TABLE ProducerContracts
     contract_end DATE CHECK(contract_end >= contract_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
     installments_number INTEGER NOT NULL,
-    is_amendment BOOLEAN,
+    signed_date DATE NOT NULL DEFAULT NOW() check (signed_date <= contract_start ),
     incentive NUMERIC(6, 4), --0.0001% 
-    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, contract_start),
+    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, signed_date),
     CONSTRAINT ProContracts_proposal_id_fk FOREIGN KEY (proposal_id) REFERENCES project_db_2021.Proposals (proposal_id)
 );
 
 CREATE TABLE PaymentRecords
 (
     proposal_id INTEGER, 
-    contract_start DATE, 
+    signed_date DATE, 
     payment_number INTEGER, 
     amount NUMERIC(12,2) NOT NULL CHECK (amount >=0), 
     payment_status payments_status_type NOT NULL, 
     date_planned DATE NOT NULL, 
     date_paid DATE, 
     is_incentive BOOLEAN NOT NULL,
-    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, contract_start, payment_number),
-    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start),
-    CHECK (date_paid >= contract_start) 
+    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, signed_date, payment_number),
+    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, signed_date) REFERENCES project_db_2021.ProducerContracts (proposal_id, signed_date),
+    CHECK (date_paid >= signed_date) 
 );
+--index : car on fait un test avec status
+CREATE INDEX PaymentRecords_status_i ON PaymentRecords (payment_status);
+
 
 CREATE TABLE Agents (
 	agent_id SERIAL NOT NULL,
@@ -158,6 +166,10 @@ CREATE TABLE AgencyContracts(
 	CONSTRAINT contract_end_check CHECK (contract_end > contract_start AND contract_end < '2100-01-01'),
 	CONSTRAINT fee_check CHECK (fee > 0 AND fee < 100)
 );
+--index
+CREATE INDEX AgencyContracts_contract_start_i ON AgencyContracts (contract_start);
+CREATE INDEX AgencyContracts_contract_end_i ON AgencyContracts (contract_end);
+
 -- trigger : verifier que deux contrats avec le meme artiste n'ont pas cours au meme moment ?
 
 CREATE TABLE AgentRecords(

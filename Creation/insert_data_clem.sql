@@ -53,9 +53,7 @@ UPDATE AgencyContracts SET contract_end = NULL WHERE contract_end = '2099-01-01'
 UPDATE AgentRecords SET represent_end = NULL WHERE represent_end >  NOW();
 
 -- Involvments
-\o out.txt
 \copy Involvments(contact_id, creation_id, skill_id) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Involvments.csv' WITH (FORMAT CSV) 
-\o
 
 
 

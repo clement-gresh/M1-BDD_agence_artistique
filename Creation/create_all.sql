@@ -192,14 +192,8 @@ CREATE TABLE KnownSkills(
 	CONSTRAINT KnownSkills_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
 	CONSTRAINT KnownSkills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
-<<<<<<< HEAD
 
-
--- \i insert_data.sql
-=======
-
-\i create_triggers.sql
-\i insert_data.sql
->>>>>>> su
+--\i create_triggers.sql
+--\i insert_data.sql
 
 

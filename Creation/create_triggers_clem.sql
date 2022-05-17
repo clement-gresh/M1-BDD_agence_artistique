@@ -12,19 +12,77 @@ FOR EACH ROW
 WHEN (NEW.profits = NULL)
 EXECUTE PROCEDURE profits_1_null();
 
--- Creations : BEFORE insert/update, update 0-n ligne dans la table PaymentRecords en fonction de la Participation de tous les artistes y ayant joué
-/*CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
+-- Creations : when the profits are updated, adds a new line in PaymentRecords for each artist who was part of the creation.
+-- The amount of the payment is the artist incentive for that creation times the increase in profits.
+CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
+	DECLARE
+		incent NUMERIC(6, 4);
+		prop_id INT;
+		c_start DATE;
+		p_nb INT;
+
+		c_payment CURSOR FOR
+			SELECT proposal_id, contract_start, incentive, payment_number
+			FROM  Requests
+				NATURAL JOIN Proposals
+				NATURAL JOIN ProducerContracts
+				NATURAL JOIN PaymentRecords
+			WHERE Requests.creation_id = NEW.creation_id AND Proposals.proposal_status = 'accepted'::proposals_status_type
+				AND (proposal_id, contract_start)
+					in ( select proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
+				AND (proposal_id, contract_start, payment_number)
+					in ( select proposal_id,contract_start, max(payment_number) from PaymentRecords group by (proposal_id,contract_start));
+
 	BEGIN
-		INSERT INTO PaymentRecords
-			SELECT 
+		OPEN c_payment;
+		LOOP
+			FETCH c_payment INTO prop_id, c_start, incent, p_nb;
+			EXIT WHEN NOT FOUND;
+
+			INSERT INTO PaymentRecords(
+				proposal_id,
+				contract_start,
+				payment_number,
+				amount,
+				payment_status,
+				date_planned,
+				date_paid,
+				is_incentive)
+			VALUES (prop_id,
+				c_start,
+				p_nb + 1,
+				incent * (NEW.profits - OLD.profits),
+				'todo',
+				NOW(),
+				NULL,
+				true);
+		END LOOP;
+		CLOSE c_payment;
+		RETURN NEW;
 	END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER Creations_profits_payment
-AFTER INSERT OR UPDATE Creations
+AFTER UPDATE ON Creations -- add INSERT ? But then cannot use old so might need to do another trigger
 FOR EACH ROW
-WHEN NEW.profits != 0
-EXECUTE PROCEDURE profits_2_payment()*/
+WHEN (NEW.profits != 0)
+EXECUTE PROCEDURE profits_2_payment();
+
+/*
+		SELECT proposal_id, contract_start, incentive, payment_number
+		FROM  Requests
+			NATURAL JOIN Proposals
+			NATURAL JOIN ProducerContracts
+			NATURAL JOIN PaymentRecords
+		WHERE Requests.creation_id = NEW.creation_id AND Proposals.proposal_status = 'accepted'::proposals_status_type
+			AND (proposal_id, contract_start) in ( select proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
+			AND (proposal_id, contract_start, payment_number) in ( select proposal_id,contract_start, max(payment_number) from PaymentRecords group by (proposal_id,contract_start));
+
+		amount := incentive * (NEW.profits - OLD.profits);
+
+		INSERT INTO PaymentRecords
+			SELECT '', '', '', '', amount, NOW() + interval '1 month', NULL, True;
+*/
 
 -- Involvments : checks that the skills referenced in this table are of type 'job'
 CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$

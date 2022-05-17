@@ -193,6 +193,11 @@ CREATE TABLE KnownSkills(
 	CONSTRAINT KnownSkills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
 
+-- \i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/create_all.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/create_triggers.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/create_triggers_clem.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/creation_function.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/insert_data_clem.sql'
 --\i create_triggers.sql
 --\i insert_data.sql
 

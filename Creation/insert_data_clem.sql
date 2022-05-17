@@ -25,10 +25,6 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
 -- debug : remplacer par floor(11+random() *99999); pour eviter code postal decimal ou a 1 seul chiffre
 -- FIN DEBUG : LIFANG
 
-
--- Remember to remove the header from csv files
--- Remove ' and space in names
-
 -- Agents
 \copy Agents(email, first_name, last_name, gender, birth_date, tel, address, city, postal_code) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Agents.csv' WITH (FORMAT CSV)
 
@@ -40,20 +36,39 @@ UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR 
 -- Skills
 \copy Skills(skill_name, skill_type) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV)
 
-
 -- KnownSkills
 \copy KnownSkills(contact_id, skill_id) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/KnownSkills.csv' WITH (FORMAT CSV)
+
+--Requests
+SELECT insert_requests();
+--SELECT * FROM Requests ORDER BY RANDOM() LIMIT 5;
 
 -- AgencyContracts
 \copy AgencyContracts(contact_id, contract_start, contract_end,	fee) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/AgencyContracts.csv' WITH (FORMAT CSV)
 UPDATE AgencyContracts SET contract_end = NULL WHERE contract_end = '2099-01-01';
 
+--Involvments
+\copy Involvments(contact_id, creation_id, skill_id) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Involvments.csv' WITH (FORMAT CSV)
+
+--RequiredSkills
+SELECT insert_requiredskills();
+--SELECT * FROM RequiredSkills ORDER BY RANDOM() LIMIT 5;
+
 -- AgentRecords
 \copy AgentRecords(agent_id, contact_id, represent_start, represent_end) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/AgentRecords.csv' WITH (FORMAT CSV)
 UPDATE AgentRecords SET represent_end = NULL WHERE represent_end >  NOW();
 
--- Involvments
-\copy Involvments(contact_id, creation_id, skill_id) FROM 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Involvments.csv' WITH (FORMAT CSV) 
+--Proposals
+SELECT insert_proposals();
+SELECT * FROM Proposals ORDER BY RANDOM() LIMIT 5;
+
+--ProducerContracts
+SELECT insert_producercontracts();
+SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
+
+--PaymentRecords
+SELECT insert_paymentrecords();
+SELECT * FROM paymentrecords ORDER BY RANDOM() LIMIT 5;
 
 
 

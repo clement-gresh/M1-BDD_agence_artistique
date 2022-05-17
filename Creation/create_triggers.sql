@@ -10,8 +10,8 @@ CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
         SELECT count(*) INTO nb
         from agencycontracts 
         where contact_id = new.contact_id
-        and new.contract_start between contract_start and contract_end
-        or new.contract_end between contract_start and contract_end;
+        and ((new.contract_start between contract_start and contract_end)
+        or (new.contract_end between contract_start and contract_end));
         
         -- si une ligne existe dans nb, c'est qu'un contrat est déja en cours !
         IF (nb != 0) THEN
@@ -37,7 +37,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER Agencycontracts_address_agent_trigger
-BEFORE INSERT OR UPDATE ON agencycontracts
+BEFORE INSERT ON agencycontracts
 FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
 

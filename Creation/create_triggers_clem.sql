@@ -68,21 +68,6 @@ FOR EACH ROW
 WHEN (NEW.profits != 0)
 EXECUTE PROCEDURE profits_2_payment();
 
-/*
-		SELECT proposal_id, contract_start, incentive, payment_number
-		FROM  Requests
-			NATURAL JOIN Proposals
-			NATURAL JOIN ProducerContracts
-			NATURAL JOIN PaymentRecords
-		WHERE Requests.creation_id = NEW.creation_id AND Proposals.proposal_status = 'accepted'::proposals_status_type
-			AND (proposal_id, contract_start) in ( select proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
-			AND (proposal_id, contract_start, payment_number) in ( select proposal_id,contract_start, max(payment_number) from PaymentRecords group by (proposal_id,contract_start));
-
-		amount := incentive * (NEW.profits - OLD.profits);
-
-		INSERT INTO PaymentRecords
-			SELECT '', '', '', '', amount, NOW() + interval '1 month', NULL, True;
-*/
 
 -- Involvments : checks that the skills referenced in this table are of type 'job'
 CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$

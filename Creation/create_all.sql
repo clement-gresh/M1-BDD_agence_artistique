@@ -107,7 +107,7 @@ CREATE TABLE ProducerContracts
     contract_start DATE,
     contract_end DATE CHECK(contract_end >= contract_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
-    installments_number INTEGER NOT NULL,
+    payment_number INTEGER NOT NULL,
     is_amendment BOOLEAN,
     incentive NUMERIC(6, 4), --0.0001% 
     CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, contract_start),

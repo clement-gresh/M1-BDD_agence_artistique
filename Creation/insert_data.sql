@@ -3,7 +3,7 @@
 \i creation_function.sql
 
 --Contacts
-COPY contacts(first_name, last_name, email, gender) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/contacts.csv' WITH (FORMAT CSV);
+COPY contacts(first_name, last_name, email, gender) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Contacts.csv' WITH (FORMAT CSV);
 UPDATE contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN (SELECT contact_id FROM contacts ORDER BY RANDOM() LIMIT 1000);
 UPDATE contacts SET birth_date =  TO_date(to_char(  1+random() *27, '00') || '-' || to_char( 1+random() *11, '00') || '-' ||  to_char( 1925 +random() *80, '0000') ,'DD-MM-YYYY' );
 UPDATE contacts SET tel= '+33' || to_char( 600000000 + random() * 200000000 + 1, 'FM999999999') ;
@@ -16,6 +16,7 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
                                    [floor(random() * 30 + 1)];
 SELECT * FROM contacts ORDER BY RANDOM() LIMIT 5;
 
+--Tables Clément
 --Agents
 COPY Agents(email, first_name, last_name, gender, birth_date, tel, address, city, postal_code) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Agents.csv' WITH (FORMAT CSV);
 SELECT * FROM Agents ORDER BY RANDOM() LIMIT 5;
@@ -27,18 +28,18 @@ UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR 
 SELECT * FROM Creations ORDER BY RANDOM() LIMIT 5;
 
 --Requests
-SELECT insert_reuqests();
+SELECT insert_requests();
 SELECT * FROM Requests ORDER BY RANDOM() LIMIT 5;
 
 --Skills
 COPY Skills(skill_name, skill_type) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV);
 SELECT * FROM Skills ORDER BY RANDOM() LIMIT 5;
 
+-- End Table Clément
+
 --RequiredSkills
 SELECT insert_requiredskills();
 SELECT * FROM RequiredSkills ORDER BY RANDOM() LIMIT 5;
-
---contacts => request => requiresSkill => proposal => ProducerContracts => PaymentRecords
 
 --Proposals
 SELECT insert_proposals();
@@ -48,6 +49,11 @@ SELECT * FROM Proposals ORDER BY RANDOM() LIMIT 5;
 SELECT insert_producercontracts();
 SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
 
--- --PaymentRecords
--- SELECT insert_paymentrecords();
--- SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
+--PaymentRecords
+SELECT insert_paymentrecords();
+SELECT * FROM paymentrecords ORDER BY RANDOM() LIMIT 5;
+
+--agencycontracts for test
+-- insert into agencycontracts values ( 1,now()+ INTERVAL '1 day',now()+ INTERVAL '4 day' ,21.5);
+-- insert into agencycontracts values ( 1,now()+ INTERVAL '3 day',now()+ INTERVAL '6 day' ,21.5);
+-- insert into agencycontracts values ( 1,now()+ INTERVAL '5 day',now()+ INTERVAL '8 day' ,21.5);

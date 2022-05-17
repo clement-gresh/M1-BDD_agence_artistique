@@ -67,7 +67,7 @@ CREATE TABLE Requests
     request_description TEXT, 
     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),
     request_status requests_status_type NOT NULL, 
-    request_start DATE NOT NULL DEFAULT NOW(), 
+    request_start DATE, 
     request_end DATE,
     CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
     CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
@@ -108,7 +108,7 @@ CREATE TABLE ProducerContracts
 (   
     proposal_id INTEGER,
     contract_start DATE,
-    contract_end DATE CHECK(contract_end > contract_start),
+    contract_end DATE CHECK(contract_end >= contract_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
     installments_number INTEGER NOT NULL,
     is_amendment BOOLEAN,
@@ -197,5 +197,7 @@ CREATE TABLE KnownSkills(
 -- trigger : seul un musicien peut avoir un skill_type = instrument ou style
 
 
+\i create_triggers.sql
 \i insert_data.sql
+
 

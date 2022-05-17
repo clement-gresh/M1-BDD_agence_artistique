@@ -1,6 +1,6 @@
 --Requests
 --insert data of requests randomly
-CREATE OR REPLACE FUNCTION insert_reuqests() RETURNS void AS $$
+CREATE OR REPLACE FUNCTION insert_requests() RETURNS void AS $$
 DECLARE
     i INTEGER;
     j INTEGER;
@@ -85,6 +85,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--A vérifier
 --ProducerContracts
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
 DECLARE
@@ -94,21 +95,26 @@ DECLARE
     pid INTEGER;
     ran INTEGER;
     dat DATE;
+    bud NUMERIC(12,2);
 BEGIN
     nb_proposals_accpeted := (SELECT count(*) FROM proposals WHERE proposal_status = 'accepted');
     FOR i IN 1..nb_proposals_accpeted
     LOOP
-        ran := floor(RANDOM()*365);
+        ran := floor(RANDOM()*365+1);
         dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
         nb_payment := floor(RANDOM()*10+1);
         
-        SELECT proposal_id INTO pid FROM proposals WHERE  proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
+        SELECT budget,proposal_id INTO bud,pid FROM proposals p,requests r WHERE r.request_id=p.request_id and proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
+        
+        if(random()*100) > 90 then
+            bud:=bud*1.1;
+        end if;
         
         IF (pid, dat) NOT IN (SELECT proposal_id, contract_start FROM producercontracts)
         THEN
             INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary,contract_end,is_amendment,incentive) 
             VALUES (pid, dat, nb_payment, 
-                    CASE WHEN nb_payment != 0 THEN 100 + RANDOM()*5000 ELSE 0 END,
+                    bud,
                     NOW() + '1 day'::INTERVAL*ran,
                     CASE WHEN pid in (SELECT proposal_id FROM ProducerContracts ) THEN True ELSE False END,
                     CASE WHEN nb_payment !=0 and RANDOM() <0.1  THEN (RANDOM()*0.1) ELSE 0.00 END
@@ -121,8 +127,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+--A vérifier
 --insert_payments
-CREATE OR REPLACE FUNCTION insert_payments() RETURNS void AS $$
+CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
 DECLARE
     i INTEGER;
     j INTEGER;
@@ -131,7 +138,7 @@ DECLARE
     nb_payment INTEGER;
     amount NUMERIC(12,2);
     dat DATE;
-    c_product CURSOR  FOR 
+    c_product CURSOR  FOR --cursor lié un pointeur interne a la prochaine ligne a ligne
         SELECT 
             proposal_id,installments_number,salary, contract_start
         FROM 
@@ -141,13 +148,14 @@ DECLARE
         ORDER BY 
             proposal_id ;
 BEGIN
-    open c_product;
+OPEN c_product;
     LOOP
-        FETCH c_product INTO pid, nb_payment,amount,dat;
-        EXIT WHEN NOT FOUND;
-        for j in 1..nb_payment
+        --FETCH lit et stoke la prochaine ligne du cursuer dans des variables, s'il n'en y a pas, FETCH renvoie NULL
+        FETCH c_product INTO pid, nb_payment,amount,dat; 
+        EXIT WHEN NOT FOUND; --FOUND : trouvé la ligne
+        FOR j IN 1..nb_payment
         LOOP
-            raise notice 'Exécuté à % % %', pid, nb_payment,amount;
+            -- raise notice 'Exécuté à % % %', pid, nb_payment,amount;
             INSERT INTO paymentrecords(
                 proposal_id , 
                 contract_start , 
@@ -164,18 +172,6 @@ BEGIN
                    );
         END LOOP;       
     END LOOP;
-close c_product;
+CLOSE c_product; --fermeture curseur
 END;
 $$ LANGUAGE plpgsql;
-
---PaymentRecords
---   proposal_id INTEGER, 
---     contract_start DATE, 
---     payment_number INTEGER, 
---     amount NUMERIC(12,2) NOT NULL CHECK (amount >=0), 
---     payment_status payments_status_type NOT NULL, 
---     date_planned DATE NOT NULL, 
---     date_paid DATE, 
---     is_incentive BOOLEAN NOT NULL,
---     CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, contract_start, payment_number),
---     CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start)

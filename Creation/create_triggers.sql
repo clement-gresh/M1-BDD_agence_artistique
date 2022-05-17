@@ -172,6 +172,7 @@ CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
 	BEGIN
 		SET NEW.profits = 0;
 		SET last_update_profits = NOW;
+		RETURN NEW;
 	END;
 $$ LANGUAGE plpgsql;
 
@@ -191,16 +192,19 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 		p_nb INT;
 
 		c_payment CURSOR FOR
-			SELECT proposal_id, contract_start, incentive, payment_number
-			FROM  Requests
-				NATURAL JOIN Proposals
-				NATURAL JOIN ProducerContracts
-				NATURAL JOIN PaymentRecords
-			WHERE Requests.creation_id = NEW.creation_id AND Proposals.proposal_status = 'accepted'::proposals_status_type
-				AND (proposal_id, contract_start)
-					in ( select proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
-				AND (proposal_id, contract_start, payment_number)
-					in ( select proposal_id,contract_start, max(payment_number) from PaymentRecords group by (proposal_id,contract_start));
+			SELECT prop.proposal_id, contract_start, incentive, payment_number
+			FROM  Requests AS req
+			JOIN Proposals AS prop
+				ON req.request_id = prop.request_id
+			JOIN ProducerContracts AS pc
+				ON pc.proposal_id = prop.proposal_id
+			JOIN PaymentRecords AS pr
+				ON (pr.proposal_id = pc.proposal_id AND pr.signed_date = pc.signed_date)
+			WHERE req.creation_id = NEW.creation_id AND prop.proposal_status = 'accepted'::proposals_status_type
+				AND (prop.proposal_id, contract_start)
+					in ( select prop.proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
+				AND (prop.proposal_id, contract_start, payment_number)
+					in ( select prop.proposal_id,contract_start, max(payment_number) from PaymentRecords group by (proposal_id,contract_start));
 
 	BEGIN
 		OPEN c_payment;

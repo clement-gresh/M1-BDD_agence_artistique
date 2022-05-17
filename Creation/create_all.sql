@@ -78,7 +78,7 @@ CREATE TABLE Skills(
 	skill_type skill_type_type NOT NULL,
 	CONSTRAINT Skills_pk PRIMARY KEY (skill_id)
 );
---index : on a fait des foncitons sur ces deux colonnes
+--index : on a fait des fonctions sur ces deux colonnes
 CREATE INDEX Skills_skill_name_i ON Skills (skill_name);
 CREATE INDEX Skills_skill_type_i ON Skills (skill_type);
 
@@ -170,8 +170,6 @@ CREATE TABLE AgencyContracts(
 CREATE INDEX AgencyContracts_contract_start_i ON AgencyContracts (contract_start);
 CREATE INDEX AgencyContracts_contract_end_i ON AgencyContracts (contract_end);
 
--- trigger : verifier que deux contrats avec le meme artiste n'ont pas cours au meme moment ?
-
 CREATE TABLE AgentRecords(
 	agent_id INT NOT NULL,
 	contact_id INT NOT NULL,
@@ -183,7 +181,6 @@ CREATE TABLE AgentRecords(
 	CONSTRAINT represent_start_check CHECK (represent_start > '1900-01-01' AND represent_start < '2035-01-01'),
 	CONSTRAINT represent_end_check CHECK (represent_end > represent_start AND represent_end < '2100-01-01')
 );
--- trigger : verifier qu'un agent ne peut representer un artiste que quand l'artiste a un contrat en cours avec l'agence ?
 
 
 CREATE TABLE Involvments(

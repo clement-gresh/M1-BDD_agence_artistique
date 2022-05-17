@@ -85,8 +85,6 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
---A vérifier
---ProducerContracts
 
 
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
@@ -144,15 +142,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
---SELECT * FROM agencycontracts
---SELECT * FROM ProducerContracts limit 10;
---SELECT * FROM paymentrecords WHERE proposal_id=4;
---SELECT count(*) FROM ProducerContracts;
---SELECT count(*) FROM agencycontracts;
---SELECT count(*) FROM agencycontracts WHERE contact_id=1671;
---INSERT INTO agencycontracts values(1671, now()- '1 day'::INTERVAL* random()*1000, now()+ '1 day'::INTERVAL* random()*1000 , 25*random()  );
-
---A vérifier
 --insert_payments
 CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
 DECLARE

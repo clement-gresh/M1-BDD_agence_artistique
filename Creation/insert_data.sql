@@ -1,8 +1,8 @@
 
 -- INSERT DATA
 
---PATH C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/filename
---PATH /Users/sulifang/Projets/projet-bdd-2021/Creation/filename
+--PATH /Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/filename
+--PATH /Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/filename
 
 --Contacts
 \COPY contacts(first_name, last_name, email, gender) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/contacts.csv' WITH (FORMAT CSV);
@@ -23,7 +23,7 @@ SELECT * FROM contacts ORDER BY random() LIMIT 5;
 SELECT * FROM Agents ORDER BY random() LIMIT 5;
 
 --Creations
-\COPY Creations(creation_name, creation_type, release_date, profits, last_update_profits) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creations.csv' WITH (FORMAT CSV);
+\COPY Creations(creation_name, creation_type, release_date, profits, last_update_profits) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/Creations.csv' WITH (FORMAT CSV);
 UPDATE Creations SET profits = 0 WHERE  release_date > NOW();
 UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR last_update_profits < release_date);
 SELECT * FROM Creations ORDER BY random() LIMIT 5;
@@ -33,18 +33,18 @@ SELECT * FROM Creations ORDER BY random() LIMIT 5;
 SELECT * FROM Skills ORDER BY random() LIMIT 5;
 
 -- KnownSkills
-\COPY KnownSkills(contact_id, skill_id) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/KnownSkills.csv' WITH (FORMAT CSV);
+\COPY KnownSkills(contact_id, skill_id) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/KnownSkills.csv' WITH (FORMAT CSV);
 
 --Requests
 SELECT insert_requests();
 SELECT * FROM Requests ORDER BY random() LIMIT 5;
 
 -- AgencyContracts
-\COPY AgencyContracts(contact_id, contract_start, contract_end,fee) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/AgencyContracts.csv' WITH (FORMAT CSV);
+\COPY AgencyContracts(contact_id, contract_start, contract_end,fee) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/AgencyContracts.csv' WITH (FORMAT CSV);
 UPDATE AgencyContracts SET contract_end = NULL WHERE contract_end = '2099-01-01';
 
 --Involvments
-\COPY Involvments(contact_id, creation_id, skill_id) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Involvments.csv' WITH (FORMAT CSV);
+\COPY Involvments(contact_id, creation_id, skill_id) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/Involvments.csv' WITH (FORMAT CSV);
 
 --RequiredSkills
 SELECT insert_requiredskills();
@@ -55,7 +55,7 @@ SELECT * FROM RequiredSkills ORDER BY random() LIMIT 5;
 SELECT * FROM Skills ORDER BY random() LIMIT 5;
  
 -- AgentRecords
-\COPY AgentRecords(agent_id, contact_id, represent_start, represent_end) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/AgentRecords.csv' WITH (FORMAT CSV);
+\COPY AgentRecords(agent_id, contact_id, represent_start, represent_end) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Creation/AgentRecords.csv' WITH (FORMAT CSV);
 UPDATE AgentRecords SET represent_end = NULL WHERE represent_end >  NOW();
 
 --Proposals

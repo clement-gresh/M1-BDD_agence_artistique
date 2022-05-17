@@ -1,5 +1,3 @@
--- TRIGGERS LIFANG POST INSERT GLOBAL
-
 --TRIGGER 5
 
 CREATE OR REPLACE FUNCTION validate_proposals() RETURNS TRIGGER AS $$
@@ -43,7 +41,7 @@ CREATE OR REPLACE FUNCTION validate_proposals() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER valide_annonce
+CREATE TRIGGER valide_annonce
 BEFORE INSERT OR UPDATE ON proposals
 FOR EACH ROW
 EXECUTE PROCEDURE validate_proposals();
@@ -83,11 +81,20 @@ CREATE OR REPLACE FUNCTION generate_payments() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 --/!\ 2 triggers : 1 insert 1 uppdate
-CREATE OR REPLACE TRIGGER generate_payment
+CREATE TRIGGER generate_payment
 BEFORE INSERT OR UPDATE ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments();
 
+--/!\ check salary = celui de request
+--SELECT * FROM proposals WHERE proposal_id=3991;
+--SELECT * FROM requests;
+--SELECT budget,salary FROM requests r,proposals p , ProducerContracts pc WHERE r.request_id=p.request_id AND p.proposal_id=pc.proposal_id;
+--SELECT * FROM ProducerContracts;
+--SELECT * FROM paymentrecords;
+--insert into ProducerContracts values(2000,now(),now(),10000,3,false,8);
+--SELECT * FROM paymentrecords WHERE proposal_id=2000;
+--SELECT * FROM producercontracts WHERE proposal_id=7704;
 
 CREATE OR REPLACE FUNCTION generate_payments_insert() RETURNS TRIGGER AS $$
 	DECLARE 
@@ -110,26 +117,7 @@ CREATE OR REPLACE FUNCTION generate_payments_insert() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER generate_payment
+CREATE TRIGGER generate_payment
 AFTER INSERT ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments_insert();
-
-CREATE OR REPLACE FUNCTION auto_amendments() RETURNS TRIGGER AS $$
-	BEGIN
-		-- auto amendment :  si il y a deja un contrat sur la proposition_id , le contrat est considere comme etant un avenant
-		IF (SELECT count(*)
-		FROM ProducerContracts
-		WHERE proposal_id = new.proposal_id
-		 ) > 0 THEN
-			raise notice 'Avenant detécté  : auto switch is_amendment=true ';
-			new.is_amendment := true;
-		end if;
-		RETURN NEW;
-	END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER auto_amendment
-before INSERT ON ProducerContracts
-FOR EACH ROW
-EXECUTE PROCEDURE auto_amendments();

@@ -2,6 +2,9 @@
 -- launch for creating functions
 \i creation_function.sql
 
+--PATH C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/filename
+--PATH /Users/sulifang/Projets/projet-bdd-2021/Creation/filename
+
 --Contacts
 COPY contacts(first_name, last_name, email, gender) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Contacts.csv' WITH (FORMAT CSV);
 UPDATE contacts SET society = 'Studio ' || UPPER(last_name) WHERE contact_id IN (SELECT contact_id FROM contacts ORDER BY RANDOM() LIMIT 1000);
@@ -16,7 +19,6 @@ update contacts set city =  (array['Paris', 'Strasbourg', 'Tours', 'Lille', 'Chi
                                    [floor(random() * 30 + 1)];
 SELECT * FROM contacts ORDER BY RANDOM() LIMIT 5;
 
---Tables Clément
 --Agents
 COPY Agents(email, first_name, last_name, gender, birth_date, tel, address, city, postal_code) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Agents.csv' WITH (FORMAT CSV);
 SELECT * FROM Agents ORDER BY RANDOM() LIMIT 5;
@@ -27,19 +29,31 @@ UPDATE Creations SET profits = 0 WHERE  release_date > NOW();
 UPDATE Creations SET last_update_profits = NOW() WHERE (release_date > NOW() OR last_update_profits < release_date);
 SELECT * FROM Creations ORDER BY RANDOM() LIMIT 5;
 
---Requests
-SELECT insert_requests();
-SELECT * FROM Requests ORDER BY RANDOM() LIMIT 5;
-
 --Skills
 COPY Skills(skill_name, skill_type) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV);
 SELECT * FROM Skills ORDER BY RANDOM() LIMIT 5;
 
--- End Table Clément
+-- KnownSkills
+COPY KnownSkills(contact_id, skill_id) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/KnownSkills.csv' WITH (FORMAT CSV);
+
+--Requests
+SELECT insert_requests();
+SELECT * FROM Requests ORDER BY RANDOM() LIMIT 5;
+
+-- AgencyContracts
+COPY AgencyContracts(contact_id, contract_start, contract_end,fee) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/AgencyContracts.csv' WITH (FORMAT CSV);
+UPDATE AgencyContracts SET contract_end = NULL WHERE contract_end = '2099-01-01';
+
+--Involvments
+COPY Involvments(contact_id, creation_id, skill_id) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Involvments.csv' WITH (FORMAT CSV);
 
 --RequiredSkills
 SELECT insert_requiredskills();
 SELECT * FROM RequiredSkills ORDER BY RANDOM() LIMIT 5;
+
+-- AgentRecords
+COPY AgentRecords(agent_id, contact_id, represent_start, represent_end) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/AgentRecords.csv' WITH (FORMAT CSV);
+UPDATE AgentRecords SET represent_end = NULL WHERE represent_end >  NOW();
 
 --Proposals
 SELECT insert_proposals();
@@ -52,8 +66,3 @@ SELECT * FROM ProducerContracts ORDER BY RANDOM() LIMIT 5;
 --PaymentRecords
 SELECT insert_paymentrecords();
 SELECT * FROM paymentrecords ORDER BY RANDOM() LIMIT 5;
-
---agencycontracts for test
--- insert into agencycontracts values ( 1,now()+ INTERVAL '1 day',now()+ INTERVAL '4 day' ,21.5);
--- insert into agencycontracts values ( 1,now()+ INTERVAL '3 day',now()+ INTERVAL '6 day' ,21.5);
--- insert into agencycontracts values ( 1,now()+ INTERVAL '5 day',now()+ INTERVAL '8 day' ,21.5);

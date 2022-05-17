@@ -179,7 +179,8 @@ CREATE TABLE Involvments(
 	creation_id INT NOT NULL,
 	skill_id INT NOT NULL,
 	description text,
-	CONSTRAINT Involvments_pk PRIMARY KEY (contact_id, creation_id),
+	--CONSTRAINT Involvments_pk PRIMARY KEY (contact_id, creation_id),
+	CONSTRAINT Involvments_pk PRIMARY KEY (contact_id, creation_id, skill_id),
 	CONSTRAINT Involvments_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
 	CONSTRAINT Involvments_creation_id_fkey FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
 	CONSTRAINT Involvments_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)

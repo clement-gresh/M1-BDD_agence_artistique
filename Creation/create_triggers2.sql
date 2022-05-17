@@ -88,15 +88,6 @@ BEFORE INSERT OR UPDATE ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments();
 
---/!\ check salary = celui de request
---SELECT * FROM proposals WHERE proposal_id=3991;
---SELECT * FROM requests;
---SELECT budget,salary FROM requests r,proposals p , ProducerContracts pc WHERE r.request_id=p.request_id AND p.proposal_id=pc.proposal_id;
---SELECT * FROM ProducerContracts;
---SELECT * FROM paymentrecords;
---insert into ProducerContracts values(2000,now(),now(),10000,3,false,8);
---SELECT * FROM paymentrecords WHERE proposal_id=2000;
---SELECT * FROM producercontracts WHERE proposal_id=7704;
 
 CREATE OR REPLACE FUNCTION generate_payments_insert() RETURNS TRIGGER AS $$
 	DECLARE 
@@ -142,90 +133,3 @@ CREATE OR REPLACE TRIGGER auto_amendment
 before INSERT ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE auto_amendments();
-
-
---SELECT * FROM ProducerContracts WHERE is_amendment =true;
---insert into ProducerContracts values(2000,now(),now(),10000,3,false,8);
---insert into ProducerContracts values(2000,now()+ INTERVAL '1 day',now()+ INTERVAL '2 day',10000,3,false,8);
-
--- REQUETE GLOBALE - Calcul des montant artiste et agence de chaque paiement par rapport a la taxe prévue dans son contrat
--- SELECT first_name
--- 	,last_name
--- 	,pay.contact_id
--- 	,fee
--- 	,creation_name
--- 	,release_date
--- 	,pay.request_id
--- 	,budget
--- 	,pay.proposal_id
--- 	,pccontract_start
--- 	,salary
--- 	,is_amendment
--- 	,installments_number
--- 	,payment_number
--- 	,amount
--- 	,payment_status
--- 	,is_incentive
--- 	,a.contract_start
--- 	,a.contract_end
--- 	,round(amount*(100-fee)/100,2) Salaire_Artiste
--- 	,round(amount*fee/100,2) Salaire_Agence FROM (
--- SELECT first_name
--- 	,last_name
--- 	,c.contact_id
--- 	,creation_name
--- 	,release_date
--- 	,r.request_id
--- 	,budget
--- 	,p.proposal_id
--- 	,pc.contract_start pccontract_start
--- 	,salary
--- 	,is_amendment
--- 	,installments_number
--- 	,payment_number
--- 	,amount
--- 	,payment_status
--- 	,is_incentive
--- FROM requests r
--- 	,creations cr
--- 	,proposals p
--- 	,ProducerContracts pc
--- 	,paymentrecords pr
--- 	,contacts c
--- WHERE r.request_id = p.request_id
--- 	AND r.creation_id = cr.creation_id
--- 	AND p.proposal_id = pc.proposal_id
--- 	AND pc.proposal_id = pr.proposal_id
--- 	AND c.contact_id = p.contact_id
--- --	AND ( pc.contract_start is null or )
--- 	AND p.proposal_id = (SELECT proposal_id FROM ProducerContracts pc WHERE is_amendment=true limit 1)
--- ) pay
--- 	left outer join agencycontracts a on ( pay.contact_id=a.contact_id AND pay.pccontract_start between a.contract_start AND a.contract_end )
--- ;
-
-
--- -- insert into agencycontracts values ( 2990,now()+ INTERVAL '1 day',now()+ INTERVAL '4 day' ,21.5);
--- --SELECT * FROM agencycontracts WHERE contact_id=1142;
--- --SELECT * FROM ProducerContracts WHERE proposal_id=996;
--- --SELECT * FROM requests;
--- --insert into requests values ( 10000,1000,9344,'blabla',1000,'open'::requests_status_type,now()+ INTERVAL '1 day',now()+ INTERVAL '10 day');
--- -- SELECT * FROM creations  c, requests r WHERE c.creation_id = r.creation_id ;
--- -- SELECT * FROM requests WHERE request_id=1489;
-
--- 	-- Trigger2 => sql
--- SELECT rr.request_id,skill_name,skill_type
--- FROM requests rr
--- 	,requiredskills rrs
--- 	,skills ss
--- WHERE rr.request_id = rrs.request_id
--- 	AND rrs.skill_id = ss.skill_id
--- 	AND rr.request_id NOT IN (
--- 		SELECT r.request_id
--- 		FROM requests r
--- 			,requiredskills rs
--- 			,skills s
--- 		WHERE r.request_id = rs.request_id
--- 			AND rs.skill_id = s.skill_id
--- 			AND skill_type = 'job'
--- 		GROUP BY r.request_id
--- 		)

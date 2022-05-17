@@ -1,7 +1,7 @@
 -- TRIGGERS POST INSERT GLOBAL
 
---TRIGGER 5
 
+-- Proposals : check that it is valid
 CREATE OR REPLACE FUNCTION validate_proposals() RETURNS TRIGGER AS $$
 	DECLARE 
 	    nb INT;
@@ -50,8 +50,8 @@ EXECUTE PROCEDURE validate_proposals();
 
 
 
--- TRIGGER 6
---(1) TRIGGER : installments_number > 0, case où installments_number peut être 0 lors Requests[budget] = 0
+-- ProducerContract
+--(1) TRIGGER : installments_number > 0, cas où installments_number peut être 0 lors Requests[budget] = 0
 --(2) TRIGGER : QuAND on crée un AVENANT, on annule les paiements du contrat précédent n'ayant pas encore eu lieu
 --(3) TRIGGER : Chaque nouveau contrat genere des entrées de comptabilité (Pour tous les contrats)
 

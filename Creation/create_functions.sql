@@ -1,4 +1,3 @@
---Function LiFang
 --Requests
 --insert data of requests randomly
 CREATE OR REPLACE FUNCTION insert_requests() RETURNS void AS $$
@@ -45,7 +44,7 @@ BEGIN
 	-- pour chaque request on ajoute un job au minimum et 1 a 3 autres skills
     FOR i IN 1..nb_requests
     LOOP
-        -- skid = random job
+        -- skid = rANDom job
         skid := (SELECT skill_id FROM skills WHERE skill_type = 'job'  ORDER BY random() LIMIT 1);
         INSERT INTO RequiredSkills(request_id, skill_id) VALUES(i, skid);              
         -- insert 1 to 3 non job skill (1-3 lignes)
@@ -112,7 +111,7 @@ BEGIN
         
 		-- on choisi une proposition aleatoire pour travailler dessus
         SELECT budget,proposal_id,p.contact_id,c.release_date INTO bud,pid,cid,date_release FROM proposals p,requests r,creations c WHERE r.request_id=p.request_id  and r.creation_id=c.creation_id AND proposal_status = 'accepted' ORDER BY random() LIMIT 1;
-		-- la start date du contrat_start se fait dans l'année précédent la date_release
+		-- la signature du contrat_start se fait dans l'année précédent la date_release
 		signed := cast( date_release - '1 year'::INTERVAL*random() AS DATE );
       
 		-- 10% des contrats ont un salaire supérieur a ce qui était prévu (négociation)
@@ -134,8 +133,9 @@ BEGIN
                     CASE WHEN nb_payment !=0 AND random() <0.1  THEN (random()*0.1) ELSE 0.00 END
                    );
 			-- on insert un contrat avec l'agence dans agencycontract, avec les dates appropriées au contrat
-			if has_current_contract(cid,signed) = false then
-			INSERT INTO agencycontracts values(cid, signed- '1 day'::INTERVAL* random()*1000, signed + '1 day'::INTERVAL* random()*1000 , 25*random()  );
+			if has_current_contract(cid,signed) = false and has_current_contract(cid,signed - '1 month'::INTERVAL) = false  and has_current_contract(cid,signed+ '1 month'::INTERVAL) = false  then
+				-- /!\ on insert des agencycontracts qui peuvent fail si la date de debut ou de fin du contrat chevauche avec un autre agencycontracts existant => visualisation par request
+				INSERT INTO agencycontracts values(cid, signed - '1 month'::INTERVAL, signed + '1 month'::INTERVAL, 25*random()+0.001  );
 			end if;
         ELSE
             i=i-1;
@@ -179,7 +179,7 @@ BEGIN
         EXIT WHEN NOT FOUND;
         for j in 1..nb_payment
         LOOP
-            raise notice 'Exécuté à % % %', pid, nb_payment,amount;
+            --raise notice 'Exécuté à % % %', pid, nb_payment,amount;
             INSERT INTO paymentrecords(
                 proposal_id , 
                 signed_date , 

@@ -1,5 +1,5 @@
 
--- launch for creating functions
+-- INSERT DATA
 
 --PATH C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/filename
 --PATH /Users/sulifang/Projets/projet-bdd-2021/Creation/filename

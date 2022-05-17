@@ -7,6 +7,5 @@ projet-bdd-2021
 | SU    | LiFang   | Jeudi        | 21957835   |
 
 
-### Installation
-Pour lancer notre projet, vous pouvez lancer cette commande `\i lanucher.sql` dans le répertoire `Creation`.
-Ce launcheur va exécuter les fichier sql en ordre précis.
+### Installation 
+Pour lancer notre projet, vous pouvez utiliser la commande `\i lancher.sql` qui va exécuter les fichiers en ordre dans le répertoire `Creations`.

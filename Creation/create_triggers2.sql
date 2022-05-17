@@ -48,22 +48,7 @@ EXECUTE PROCEDURE validate_proposals();
 
 
 
-
-
-
--- insert into agencycontracts values ( 1,now()+ INTERVAL '1 day',now()+ INTERVAL '4 day' ,21.5);
---SELECT proposals.request_id,count(*) FROM proposals,requests WHERE proposals.request_id=requests.request_id group by proposals.request_id  order by count(*) desc ;
---update proposals set proposal_status='accepted'::proposals_status_type WHERE proposal_id='4151';
---insert into agencycontracts values ( 2100,now()- INTERVAL '1 day',now()+ INTERVAL '4 day' ,21.5);
---SELECT * FROM requests r, proposals p  WHERE r.request_id=p.request_id AND r.request_id=1705;
---SELECT * FROM creations WHERE creation_id='1157';
---insert into proposals values (100066,1705,216,'rejected'::proposals_status_type,now() );
---update proposals set proposal_status='pending' WHERE proposal_id=100048;
---delete FROM proposals WHERE proposal_id=100050;
---SELECT count(*) FROM proposals WHERE request_id=3151 AND contact_id=1140
-
 -- TRIGGER 6
-
 --(1) TRIGGER : installments_number > 0, case où installments_number peut être 0 lors Requests[budget] = 0
 --(2) TRIGGER : QuAND on crée un AVENANT, on annule les paiements du contrat précédent n'ayant pas encore eu lieu
 --(3) TRIGGER : Chaque nouveau contrat genere des entrées de comptabilité (Pour tous les contrats)
@@ -73,7 +58,7 @@ CREATE OR REPLACE FUNCTION generate_payments() RETURNS TRIGGER AS $$
 	    nb INT;
 	BEGIN
 		--check si un contrat est en cours pour le contactid
-		IF has_current_contract(new.contact_id) = false  AND NEW.proposal_status != 'rejected'::proposals_status_type THEN
+		IF has_current_contract(new.contact_id, NOW()) = false  AND NEW.proposal_status != 'rejected'::proposals_status_type THEN
 			RAISE EXCEPTION 'AUCUN CONTRAT EN COURS AVEC LE CLIENT !';
 		END IF;
 		RETURN NEW;
@@ -97,27 +82,27 @@ EXECUTE PROCEDURE generate_payments();
 --SELECT * FROM producercontracts WHERE proposal_id=7704;
 
 CREATE OR REPLACE FUNCTION generate_payments_insert() RETURNS TRIGGER AS $$
-	DECLARE 
-	    compteur INT := 0;
-	BEGIN
-		-- annulation des paiements planifié par les autres contrats si le nouveau contrat est un avenant
-		UPDATE paymentrecords
-		SET payment_status = 'avenant'::payments_status_type
-		WHERE proposal_id = new.proposal_id
-			AND payment_status = 'todo'::payments_status_type
-			AND date_planned > now();
+    DECLARE 
+        compteur INT := 0;
+    BEGIN
+        -- annulation des paiements planifié par les autres contrats si le nouveau contrat est un avenant
+        UPDATE paymentrecords
+        SET payment_status = 'avenant'::payments_status_type
+        WHERE proposal_id = new.proposal_id
+            AND payment_status = 'todo'::payments_status_type
+            AND date_planned > now();
 
-		-- creation des lignes de paiements en fonction du nombre de paiements.
-		LOOP
-			compteur := compteur +1 ;	
-			EXIT when compteur > new.installments_number;
-			INSERT INTO paymentrecords values(new.proposal_id,new.contract_start,compteur,new.salary/new.installments_number,'todo'::payments_status_type, NOW() + INTERVAL '1 month' * (compteur-1),null,false );
-		END LOOP;
-		RETURN NEW;
-	END;
+        -- creation des lignes de paiements en fonction du nombre de paiements.
+        LOOP
+            compteur := compteur +1 ;    
+            EXIT when compteur > new.installments_number;
+            INSERT INTO paymentrecords values(new.proposal_id,new.contract_start,compteur,new.salary/new.installments_number,'todo'::payments_status_type, NOW() + INTERVAL '1 month' * (compteur-1),null,false );
+        END LOOP;
+        RETURN NEW;
+    END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER generate_payment
+CREATE TRIGGER generate_payments_insert
 AFTER INSERT ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments_insert();

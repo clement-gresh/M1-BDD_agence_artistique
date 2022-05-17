@@ -1,33 +1,36 @@
--- TRIGGER LiFang
+--TRIGGER
+-- TRIGGERS
 -- fonction check si un contrat est en cours pour un contactid - utilisée pour le trigger 
-CREATE OR REPLACE FUNCTION has_current_contract(contactid INT, dat date) RETURNS BOOLEAN AS $$
+CREATE OR REPLACE FUNCTION has_current_contract(contactid INT, dat timestamp with time zone) RETURNS BOOLEAN AS $$
     DECLARE 
       nb INT;
     BEGIN
-        SELECT count(*)
-        INTO nb
-        FROM agencycontracts
-        WHERE contact_id = contactid
-            AND ( dat BETWEEN contract_start AND contract_end ) 
-            OR ( dat <= contract_start AND contract_end is null);
-			
+		SELECT count(*)
+		INTO nb
+		FROM agencycontracts
+		WHERE contact_id = contactid
+            AND (( dat BETWEEN contract_start AND contract_end ) 
+            OR ( dat >= contract_start AND contract_end = null));
+		
         IF (nb != 0) THEN
-            raise notice 'CONTRAT % %',contactid,dat;
+			--raise notice 'CONTRAT % %',contactid,dat;
             return true;
         END IF;
-        raise notice 'PAS DE CONTRAT % %',contactid,dat;
-        return false;
+			--raise notice 'PAS DE CONTRAT % %',contactid,dat;
+		return false;
     END;
 $$ LANGUAGE plpgsql;
+
 
 --TRIGGER pour table contacts
 CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
    DECLARE 
       nb INT;
     BEGIN     
+		--RAISE NOTICE 'TRIGGER check_address_if_agent % % %',new.contact_id,new.contract_start,new.contract_end;
         -- si une ligne existe dans nb, c'est qu'un contrat est déja en cours !
-        IF (has_current_contract(new.contact_id,new.contract_start)=true) or (has_current_contract(new.contact_id,new.contract_end)=true)  THEN
-            RAISE NOTICE 'Rejected line because a contrat is currently in progress for this client %',nb;
+        IF (has_current_contract(new.contact_id,new.contract_start)=true) or (has_current_contract(new.contact_id,new.contract_end)=true)  THEN			
+            RAISE NOTICE 'Rejected line because a contrat is currently in progress for this client contact id : % => % (%) - % (%)',new.contact_id,new.contract_start,has_current_contract(new.contact_id,new.contract_start),new.contract_end,has_current_contract(new.contact_id,new.contract_end);
             RETURN NULL;
         END IF;
         
@@ -47,12 +50,11 @@ CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER address_agent
+CREATE TRIGGER address_agent
 BEFORE INSERT ON agencycontracts
 FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
 
-SELECT * FROM agencycontracts;
 
 --TRIGGER
 --Requests : check request_start < Creations[release_date] AND request_end < Creations[release_date]

@@ -64,7 +64,7 @@ CREATE TABLE Requests
     request_description TEXT, 
     budget NUMERIC (12,2) NOT NULL CHECK(budget >=0),
     request_status requests_status_type NOT NULL, 
-    request_start DATE, 
+    request_start DATE NOT NULL DEFAULT NOW(), 
     request_end DATE,
     CONSTRAINT Requests_contact_id_fk FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
     CONSTRAINT Creations_creation_id_fk FOREIGN KEY (creation_id) REFERENCES project_db_2021.Creations (creation_id),
@@ -125,7 +125,8 @@ CREATE TABLE PaymentRecords
     date_paid DATE, 
     is_incentive BOOLEAN NOT NULL,
     CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, contract_start, payment_number),
-    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start)
+    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start),
+    CHECK (date_paid >= contract_start) 
 );
 
 CREATE TABLE Agents (
@@ -192,14 +193,5 @@ CREATE TABLE KnownSkills(
 	CONSTRAINT KnownSkills_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES project_db_2021.Contacts (contact_id),
 	CONSTRAINT KnownSkills_skill_id_fkey FOREIGN KEY (skill_id) REFERENCES project_db_2021.Skills (skill_id)
 );
-<<<<<<< HEAD
-
-
--- \i insert_data.sql
-=======
-
-\i create_triggers.sql
-\i insert_data.sql
->>>>>>> su
 
 

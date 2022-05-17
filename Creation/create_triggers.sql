@@ -76,6 +76,22 @@ BEFORE INSERT OR UPDATE ON Requests
 FOR EACH ROW
 EXECUTE PROCEDURE check_request_date();
 
+CREATE OR REPLACE FUNCTION check_request_date() RETURNS TRIGGER AS $$
+    DECLARE
+        dat date:=( SELECT release_date FROM creations WHERE creation_id=new.creation_id );
+    BEGIN
+        -- si la nouvelle request que l'on insert a une date de debut ou de fin superieure a la date de release de la creation
+        if new.request_start > dat OR
+        new.request_end > dat
+        then 
+            RAISE NOTICE 'Rejected line because the date of request ("%", "%") T4.', NEW.request_start, NEW.request_end;
+            RETURN NULL;                
+        end if;         
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+
 
 -- TRIGGER Clément
 -- Involvments : checks that the skills referenced in this table are of type 'job'

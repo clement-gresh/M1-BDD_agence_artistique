@@ -108,25 +108,25 @@ CREATE TABLE ProducerContracts
     contract_end DATE CHECK(contract_end >= contract_start),
     salary NUMERIC(12,2) NOT NULL CHECK(salary >=0),
     payment_number INTEGER NOT NULL,
-    is_amendment BOOLEAN,
+    signed_date DATE DEFAULT NOW() NOT NULL CHECK(signed_date <= contract_start),
     incentive NUMERIC(6, 4), --0.0001% 
-    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, contract_start),
+    CONSTRAINT ProContracts_proposal_id_date_pk PRIMARY KEY (proposal_id, signed_date),
     CONSTRAINT ProContracts_proposal_id_fk FOREIGN KEY (proposal_id) REFERENCES project_db_2021.Proposals (proposal_id)
 );
 
 CREATE TABLE PaymentRecords
 (
     proposal_id INTEGER, 
-    contract_start DATE, 
+    signed_date DATE, 
     payment_number INTEGER, 
     amount NUMERIC(12,2) NOT NULL CHECK (amount >=0), 
     payment_status payments_status_type NOT NULL, 
     date_planned DATE NOT NULL, 
     date_paid DATE, 
     is_incentive BOOLEAN NOT NULL,
-    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, contract_start, payment_number),
-    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, contract_start),
-    CHECK (date_paid >= contract_start) 
+    CONSTRAINT Payment_proposal_id_pk PRIMARY KEY (proposal_id, signed_date, payment_number),
+    CONSTRAINT Payment_proposal_id_date_fk FOREIGN KEY (proposal_id, contract_start) REFERENCES project_db_2021.ProducerContracts (proposal_id, signed_date),
+    CHECK (date_paid >= signed_date) 
 );
 
 CREATE TABLE Agents (

@@ -13,27 +13,27 @@ BEGIN
     nb_contacts := (SELECT count(*) FROM contacts);
     FOR i IN 1..nb_contacts/3
     LOOP
-        SELECT creation_id,release_date INTO cid,dat FROM creations ORDER BY RANDOM() LIMIT 1;
-        --the value of contact_id is between 1 AND nb_contacts rANDomly
+        SELECT creation_id,release_date INTO cid,dat FROM creations ORDER BY random() LIMIT 1;
+        --the value of contact_id is between 1 AND nb_contacts randomly
         --for having more open in requests
         --floor(...) + 1 to avoid 0
-        ran := floor(RANDOM()*10+1);
+        ran := floor(random()*10+1);
         FOR j IN 1..ran
         LOOP
             INSERT INTO Requests(contact_id, creation_id, request_status, budget,request_start, request_end) 
-            VALUES( floor(RANDOM()*nb_contacts)+1, 
+            VALUES( floor(random()*nb_contacts)+1, 
                     cid, 
-                    (ARRAY['open', 'closed', 'cancelled', 'open', 'open'])[floor(rANDom()*5+1)]::requests_status_type, 
-                    RANDOM()*10000, 
-				    dat - INTERVAL '1 day' *(rANDom()*100 +100),
-                    dat - INTERVAL '1 day' *rANDom()*100
+                    (ARRAY['open', 'closed', 'cancelled', 'open', 'open'])[floor(random()*5+1)]::requests_status_type, 
+                    random()*10000, 
+				    dat - INTERVAL '1 day' *(random()*100 +100),
+                    dat - INTERVAL '1 day' *random()*100
                    );
         END LOOP;
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
 
----RequiredSkills
+--RequiredSkills
 CREATE OR REPLACE FUNCTION insert_requiredskills() RETURNS void AS $$
 DECLARE
     i INTEGER;
@@ -42,16 +42,16 @@ DECLARE
     ran INTEGER;
 BEGIN
     nb_requests := (SELECT count(*) FROM requests);
+	-- pour chaque request on ajoute un job au minimum et 1 a 3 autres skills
     FOR i IN 1..nb_requests
     LOOP
-        -- skid = rANDom job
-        skid := (SELECT skill_id FROM skills WHERE skill_type = 'job'  ORDER BY RANDOM() LIMIT 1);
+        -- skid = random job
+        skid := (SELECT skill_id FROM skills WHERE skill_type = 'job'  ORDER BY random() LIMIT 1);
         INSERT INTO RequiredSkills(request_id, skill_id) VALUES(i, skid);              
-            
         -- insert 1 to 3 non job skill (1-3 lignes)
-        ran := rANDom()*3 +1; 
+        ran := random()*3 +1; 
         INSERT INTO RequiredSkills(request_id, skill_id)          
-        SELECT i, skill_id FROM skills WHERE skill_id != skid ORDER BY RANDOM() LIMIT ran; 
+        SELECT i, skill_id FROM skills WHERE skill_id != skid ORDER BY random() LIMIT ran; 
      
     END LOOP;
 END;
@@ -72,12 +72,12 @@ BEGIN
     -- on cree nb_request * 2 propositions
     FOR i IN 1..nb_requests*2
     LOOP
-        ran := floor(RANDOM()*90); -- for generating date rANDomly
-        rid := floor(nb_requests*rANDom() +1);
-        cid := floor(nb_contacts*rANDom() +1);
+        ran := floor(random()*90); -- for generating date rANDomly
+        rid := floor(nb_requests*random() +1);
+        cid := floor(nb_contacts*random() +1);
         IF rid IN (SELECT request_id FROM Proposals) THEN
             INSERT INTO Proposals(request_id, contact_id, proposal_status, proposed_date) 
-            VALUES (rid, cid, (ARRAY['rejected', 'pending', 'pending'])[floor(rANDom()*2+1)]::proposals_status_type, NOW() - '1 day'::INTERVAL * ran);
+            VALUES (rid, cid, (ARRAY['rejected', 'pending', 'pending'])[floor(random()*2+1)]::proposals_status_type, NOW() - '1 day'::INTERVAL * ran);
         ELSE 
             -- unique accepted per request
             INSERT INTO Proposals(request_id, contact_id, proposal_status, proposed_date) 
@@ -86,49 +86,56 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-
 --A vérifier
 --ProducerContracts
+
+
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
 DECLARE
     i INTEGER;
     nb_proposals_accpeted INTEGER;
     nb_payment INTEGER;
     pid INTEGER;
-    ran INTEGER;
+    ran float;
 	cid integer;
-    dat DATE;
-	tz date;
+    signed DATE;
+	date_release date;
+	--tz date;
 	bud NUMERIC(12,2);
 BEGIN
+	-- pour le nombre de propositions acceptées, on génère un contrat ( certaines propositions auront 2 contrats ou +, d'autres 0 contrat)
     nb_proposals_accpeted := (SELECT count(*) FROM proposals WHERE proposal_status = 'accepted');
     FOR i IN 1..nb_proposals_accpeted
     LOOP
-        ran := floor(RANDOM()*365+1);
-        dat := cast( NOW() - '1 year'::INTERVAL * RANDOM() AS DATE );
-        nb_payment := floor(RANDOM()*10+1);
+        ran := random(); -- pour conserver un random précis pour la contract_start, réutilisé pour agencycontracts
+        nb_payment := floor(random()*10+1);
         
-        SELECT budget,proposal_id,p.contact_id INTO bud,pid,cid FROM proposals p,requests r WHERE r.request_id=p.request_id AND proposal_status = 'accepted' ORDER BY RANDOM() LIMIT 1;
-        
-		-- 10% des contrats ont un salaire supérieur a ce qui était prévu
-		if(rANDom()*100) > 90 then
-			bud:=bud*(1+rANDom());
+		-- on choisi une proposition aleatoire pour travailler dessus
+        SELECT budget,proposal_id,p.contact_id,c.release_date INTO bud,pid,cid,date_release FROM proposals p,requests r,creations c WHERE r.request_id=p.request_id  and r.creation_id=c.creation_id AND proposal_status = 'accepted' ORDER BY random() LIMIT 1;
+		-- la start date du contrat_start se fait dans l'année précédent la date_release
+		signed := cast( date_release - '1 year'::INTERVAL*random() AS DATE );
+      
+		-- 10% des contrats ont un salaire supérieur a ce qui était prévu (négociation)
+		if(random()*100) > 90 then
+			bud:=bud*(1+random());
 		end if;
 		
-        IF (pid, dat) NOT IN (SELECT proposal_id, contract_start FROM producercontracts)
+		-- evite doublons
+        IF (pid, signed) NOT IN (SELECT proposal_id, signed_date FROM producercontracts )
         THEN
-			--on insert un contrat
-            INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary,contract_end,is_amendment,incentive) 
-            VALUES (pid, dat, nb_payment, 
+			--on insert un contrat avec la signed_date
+            INSERT INTO ProducerContracts(proposal_id, contract_start, installments_number, salary,contract_end,signed_date,incentive) 
+            VALUES (pid, 
+					signed + '1 year'::INTERVAL * ran,  --start = signed_date+ 1 an max
+					nb_payment, 
                     bud,
-                    NOW() + '1 day'::INTERVAL*ran,
-                    CASE WHEN pid in (SELECT proposal_id FROM ProducerContracts ) THEN True ELSE False END,
-                    CASE WHEN nb_payment !=0 AND RANDOM() <0.1  THEN (RANDOM()*0.1) ELSE 0.00 END
+                    signed + '1 year'::INTERVAL * ran + '1 year'::INTERVAL * random(), -- end = contract_start + 1 an max = signed_date + 1 an max + 1 an max
+                    signed,
+                    CASE WHEN nb_payment !=0 AND random() <0.1  THEN (random()*0.1) ELSE 0.00 END
                    );
 			-- on insert un contrat avec l'agence dans agencycontract, avec les dates appropriées au contrat
-			tz := NOW() + '1 day'::INTERVAL*ran;
-			if has_current_contract(cid,tz) = false then
-			INSERT INTO agencycontracts values(cid, dat- '1 day'::INTERVAL* RANDOM()*1000, dat+ '1 day'::INTERVAL* RANDOM()*1000 , 25*rANDom()  );
+			if has_current_contract(cid,signed) = false then
+			INSERT INTO agencycontracts values(cid, signed- '1 day'::INTERVAL* random()*1000, signed + '1 day'::INTERVAL* random()*1000 , 25*random()  );
 			end if;
         ELSE
             i=i-1;
@@ -136,6 +143,14 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+--SELECT * FROM agencycontracts
+--SELECT * FROM ProducerContracts limit 10;
+--SELECT * FROM paymentrecords WHERE proposal_id=4;
+--SELECT count(*) FROM ProducerContracts;
+--SELECT count(*) FROM agencycontracts;
+--SELECT count(*) FROM agencycontracts WHERE contact_id=1671;
+--INSERT INTO agencycontracts values(1671, now()- '1 day'::INTERVAL* random()*1000, now()+ '1 day'::INTERVAL* random()*1000 , 25*random()  );
 
 --A vérifier
 --insert_payments
@@ -150,11 +165,11 @@ DECLARE
     dat DATE;
     c_product CURSOR  FOR 
         SELECT 
-            proposal_id,installments_number,salary, contract_start
+            proposal_id,installments_number,salary, signed_date
         FROM 
             ProducerContracts 
-        WHERE 
-            (proposal_id,contract_start) in ( SELECT proposal_id,max(contract_start) FROM ProducerContracts group by proposal_id)
+        --WHERE 
+        --    (proposal_id,signed_date) in ( SELECT proposal_id,max(signed_date) FROM ProducerContracts group by proposal_id)
         ORDER BY 
             proposal_id ;
 BEGIN
@@ -167,7 +182,7 @@ BEGIN
             raise notice 'Exécuté à % % %', pid, nb_payment,amount;
             INSERT INTO paymentrecords(
                 proposal_id , 
-                contract_start , 
+                signed_date , 
                 payment_number , 
                 amount , 
                 payment_status, 
@@ -184,3 +199,4 @@ BEGIN
 close c_product;
 END;
 $$ LANGUAGE plpgsql;
+select * from paymentrecords where proposal_id=4;

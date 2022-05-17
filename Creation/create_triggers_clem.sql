@@ -1,4 +1,4 @@
--- Creations : a l'ajout d'une ligne, met automatiquement profits à 0 et last_update_profits à NOW()
+-- Creations : a l'ajout d'une ligne, met automatiquement profits à 0 s'il n'est pas renseigne et last_update_profits à NOW()
 CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
 	BEGIN
 		SET NEW.profits = 0;
@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER Creations_profits
-AFTER INSERT ON Creations
+BEFORE INSERT ON Creations
 FOR EACH ROW
 WHEN (NEW.profits = NULL)
 EXECUTE PROCEDURE profits_1_null();
@@ -32,9 +32,8 @@ CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
       nb INT;
 	BEGIN
 		SELECT count(*) INTO nb
-		FROM Involvments INNER JOIN Skills
-			ON Skills.skill_id = Involvments.skill_id
-		WHERE Involvments.skill_id = NEW.skill_id AND Skills.skill_type = 'job'::skill_type_type;
+		FROM Skills
+		WHERE NEW.skill_id = Skills.skill_id and Skills.skill_type = 'job'::skill_type_type;
 		
 		IF (nb = 0) THEN
 			RAISE NOTICE 'Rejected line ("%", "%", "%") because the skill is not of type job.',
@@ -59,13 +58,12 @@ CREATE OR REPLACE FUNCTION has_skill() RETURNS TRIGGER AS $$
 		nb INT;
 	BEGIN
 		SELECT count(*) INTO nb
-		FROM Involvments INNER JOIN KnownSkills -- est-ce toutes les skills de chaque artiste apparraissent ? Ou faut-il LEFT/RIGHT JOIN ?
-			ON Involvments.contact_id = KnownSkills.contact_id
+		FROM KnownSkills
 		WHERE NEW.contact_id = KnownSkills.contact_id AND NEW.skill_id = KnownSkills.skill_id;
-		
+
 		IF (nb = 0) THEN
-			RAISE NOTICE 'Rejected line ("%", "%", "%") because the artist does not appear to have that skill (see KnownSkills).',
-				NEW.contact_id, NEW.creation_id, NEW.skill_id;
+			--RAISE NOTICE 'Rejected line ("%", "%", "%") because the artist does not appear to have that skill (see KnownSkills).',
+			--	NEW.contact_id, NEW.creation_id, NEW.skill_id;
 			RETURN NULL;
 		ELSE
 			RETURN NEW;
@@ -87,12 +85,13 @@ CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
       musician_skill INT;
 	  is_musician INT;
 	BEGIN
+		-- Checks if the new known skill is an instrument or a style
 		SELECT count(*) INTO musician_skill
-		FROM KnownSkills INNER JOIN Skills
-			ON Skills.skill_id = KnownSkills.skill_id
-		WHERE NEW.contact_id = KnownSkills.contact_id AND NEW.skill_id = KnownSkills.skill_id 
+		FROM Skills
+		WHERE NEW.skill_id = Skills.skill_id
 			AND (Skills.skill_type = 'instrument'::skill_type_type OR Skills.skill_type = 'style'::skill_type_type);
-		
+
+		-- If it is, checks that the artist is a musician or a singer
 		IF (musician_skill > 0) THEN
 			SELECT count(*) INTO is_musician
 			FROM KnownSkills INNER JOIN Skills
@@ -100,6 +99,7 @@ CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
 			WHERE NEW.contact_id = KnownSkills.contact_id
 				AND (Skills.skill_name = 'musician'::skill_name_type OR Skills.skill_name = 'singer'::skill_name_type);
 
+			-- If not, the insert/update is rejected
 			IF (is_musician = 0) THEN
 				RAISE NOTICE 'Rejected line ("%", "%") because only a musician or singer can know an instrument or have a style.',
 					NEW.contact_id, NEW.skill_id;

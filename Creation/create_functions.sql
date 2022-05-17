@@ -85,8 +85,6 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
---A vérifier
---ProducerContracts
 
 
 CREATE OR REPLACE FUNCTION insert_producercontracts() RETURNS void AS $$
@@ -144,7 +142,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
---A vérifier
+
 --insert_payments
 CREATE OR REPLACE FUNCTION insert_paymentrecords() RETURNS void AS $$
 DECLARE

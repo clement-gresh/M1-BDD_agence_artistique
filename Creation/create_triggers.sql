@@ -49,7 +49,7 @@ CREATE OR REPLACE FUNCTION check_address_if_agent() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER address_agent
+CREATE OR REPLACE TRIGGER address_agent
 BEFORE INSERT ON agencycontracts
 FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
@@ -72,7 +72,7 @@ CREATE OR REPLACE FUNCTION check_request_date() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER requests_date_trigger
+CREATE OR REPLACE TRIGGER requests_date_trigger
 BEFORE INSERT OR UPDATE ON Requests
 FOR EACH ROW
 EXECUTE PROCEDURE check_request_date();
@@ -98,7 +98,7 @@ CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER Involvments_is_skill_job_trigger
+CREATE OR REPLACE TRIGGER Involvments_is_skill_job_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE is_skill_job();
@@ -125,7 +125,7 @@ CREATE OR REPLACE FUNCTION has_skill() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER Involvments_has_skill_trigger
+CREATE OR REPLACE TRIGGER Involvments_has_skill_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE has_skill();
@@ -165,7 +165,7 @@ CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER KnownSkills_is_musician_trigger
+CREATE OR REPLACE TRIGGER KnownSkills_is_musician_trigger
 BEFORE INSERT OR UPDATE ON KnownSkills
 FOR EACH ROW
 EXECUTE PROCEDURE is_musician();
@@ -173,16 +173,16 @@ EXECUTE PROCEDURE is_musician();
 -- Creations : when a line is inserted, sets profits to 0 if it doesn't have a value and sets last_update_profits to NOW()
 CREATE OR REPLACE FUNCTION profits_1_null() RETURNS TRIGGER AS $$
 	BEGIN
-		SET NEW.profits = 0;
-		SET last_update_profits = NOW;
+		NEW.profits := 0;
+		NEW.last_update_profits := NOW();
 		RETURN NEW;
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER Creations_profits
+CREATE OR REPLACE TRIGGER Creations_profits
 BEFORE INSERT ON Creations
 FOR EACH ROW
-WHEN (NEW.profits = NULL)
+WHEN (NEW.profits IS NULL)
 EXECUTE PROCEDURE profits_1_null();
 
 -- Creations : when the profits are updated, adds a new line in PaymentRecords for each artist who was part of the creation.
@@ -238,7 +238,7 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 	END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER Creations_profits_payment
+CREATE OR REPLACE TRIGGER Creations_profits_payment
 AFTER UPDATE ON Creations -- debug : add INSERT ? But then cannot use old so might need to do another trigger
 FOR EACH ROW
 WHEN (NEW.profits != 0)

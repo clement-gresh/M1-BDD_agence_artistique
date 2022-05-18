@@ -1,4 +1,4 @@
--- TRIGGERS LIFANG POST INSERT GLOBAL
+-- TRIGGERS POST INSERT GLOBAL
 
 
 -- Proposals : check that it is valid
@@ -78,7 +78,7 @@ CREATE OR REPLACE FUNCTION generate_payments() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER generate_payment
+CREATE OR REPLACE TRIGGER generate_payment
 BEFORE INSERT OR UPDATE ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments();
@@ -102,7 +102,7 @@ CREATE OR REPLACE FUNCTION generate_payments_insert() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER generate_payments_insert
+CREATE OR REPLACE TRIGGER generate_payments_insert
 AFTER INSERT ON ProducerContracts
 FOR EACH ROW
 EXECUTE PROCEDURE generate_payments_insert();

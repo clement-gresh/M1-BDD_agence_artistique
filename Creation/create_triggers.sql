@@ -55,7 +55,6 @@ FOR EACH ROW
 EXECUTE PROCEDURE check_address_if_agent();
 
 
---TRIGGER
 --Requests : check request_start < Creations[release_date] AND request_end < Creations[release_date]
 CREATE OR REPLACE FUNCTION check_request_date() RETURNS TRIGGER AS $$
 	DECLARE
@@ -78,7 +77,6 @@ FOR EACH ROW
 EXECUTE PROCEDURE check_request_date();
 
 
--- TRIGGER Clément
 -- Involvments : checks that the skills referenced in this table are of type 'job'
 CREATE OR REPLACE FUNCTION is_skill_job() RETURNS TRIGGER AS $$
    DECLARE 
@@ -129,7 +127,7 @@ CREATE OR REPLACE TRIGGER Involvments_has_skill_trigger
 BEFORE INSERT OR UPDATE ON Involvments
 FOR EACH ROW
 EXECUTE PROCEDURE has_skill();
--- debug : est-ce toutes les skills de chaque artiste apparraissent ? Ou faut-il LEFT/RIGHT JOIN ?
+
 
 -- KnownSkills : checks that only a musician or singer can have a skill of type 'instrument' or 'style'
 CREATE OR REPLACE FUNCTION is_musician() RETURNS TRIGGER AS $$
@@ -195,7 +193,8 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 		p_nb INT;
 
 		c_payment CURSOR FOR
-			SELECT prop.proposal_id, contract_start, incentive, payment_number
+			SELECT DISTINCT ON (prop.proposal_id, pr.signed_date)
+				prop.proposal_id, pr.signed_date, incentive, payment_number
 			FROM  Requests AS req
 			JOIN Proposals AS prop
 				ON req.request_id = prop.request_id
@@ -206,8 +205,7 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 			WHERE req.creation_id = NEW.creation_id AND prop.proposal_status = 'accepted'::proposals_status_type
 				AND (prop.proposal_id, contract_start)
 					in ( select prop.proposal_id,max(contract_start) from ProducerContracts group by proposal_id)
-				AND (prop.proposal_id, contract_start, payment_number)
-					in ( select prop.proposal_id,contract_start, max(payment_number) from PaymentRecords group by (proposal_id,contract_start));
+			ORDER BY prop.proposal_id, pr.signed_date DESC, payment_number DESC;
 
 	BEGIN
 		OPEN c_payment;
@@ -217,7 +215,7 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 
 			INSERT INTO PaymentRecords(
 				proposal_id,
-				contract_start,
+				signed_date,
 				payment_number,
 				amount,
 				payment_status,
@@ -239,7 +237,7 @@ CREATE OR REPLACE FUNCTION profits_2_payment() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER Creations_profits_payment
-AFTER UPDATE ON Creations -- debug : add INSERT ? But then cannot use old so might need to do another trigger
+AFTER UPDATE ON Creations
 FOR EACH ROW
 WHEN (NEW.profits != 0)
 EXECUTE PROCEDURE profits_2_payment();

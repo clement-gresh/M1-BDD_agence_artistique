@@ -1,3 +1,4 @@
+-- \i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_is_musician.sql'
 
 -- Test : trigger is_musician on table KnownSkills
 -- must fail : skill 16 is an instrument but artist 1113 is not a a musician so the skill cannot be put in KnownSkills

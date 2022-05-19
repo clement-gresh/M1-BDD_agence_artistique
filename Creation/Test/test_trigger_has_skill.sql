@@ -1,3 +1,4 @@
+-- \i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_has_skill.sql'
 
 -- Test : trigger has_skill on table Involvments
 -- must fail : skill 4 is of type job but artist 476 does not have it so it cannot be used in Involvments

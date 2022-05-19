@@ -39,7 +39,8 @@ CREATE TABLE Contacts
 	CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9.-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
     CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
     CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
-	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$')
+	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$'),
+	UNIQUE(first_name, last_name, birth_date)
 );
 
 CREATE TABLE Creations(
@@ -52,7 +53,8 @@ CREATE TABLE Creations(
 	CONSTRAINT Creations_pk PRIMARY KEY (creation_id),
 	CONSTRAINT release_date_check CHECK (release_date > '1900-01-01' AND release_date < '2100-01-01'),
 	CONSTRAINT profits_check CHECK (profits >= 0),
-	CONSTRAINT last_update_profits_check CHECK (last_update_profits >= '2000-01-01' AND last_update_profits <= NOW())
+	CONSTRAINT last_update_profits_check CHECK (last_update_profits >= '2000-01-01' AND last_update_profits <= NOW()),
+	UNIQUE(creation_name, creation_type, release_date)
 );
 
 
@@ -76,7 +78,8 @@ CREATE TABLE Skills(
 	skill_id SERIAL NOT NULL,
 	skill_name skill_name_type NOT NULL,
 	skill_type skill_type_type NOT NULL,
-	CONSTRAINT Skills_pk PRIMARY KEY (skill_id)
+	CONSTRAINT Skills_pk PRIMARY KEY (skill_id),
+	UNIQUE(skill_name, skill_type)
 );
 --index : on a fait des fonctions sur ces deux colonnes
 CREATE INDEX Skills_skill_name_i ON Skills (skill_name);
@@ -152,7 +155,8 @@ CREATE TABLE Agents (
 	CONSTRAINT email_check CHECK (email ~* '^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,100}\.[a-z]{2,4}$'),
 	CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
 	CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
-	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$')
+	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$'),
+	UNIQUE(first_name, last_name, birth_date)
 );
 
 CREATE TABLE AgencyContracts(

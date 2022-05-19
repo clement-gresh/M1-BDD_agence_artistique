@@ -48,7 +48,7 @@ SELECT insert_requiredskills();
 SELECT * FROM RequiredSkills ORDER BY random() LIMIT 5;
 
 --Skills
-\COPY Skills(skill_name, skill_type) FROM '/Users/sulifang/Projets/projet-bdd-2021/Creation/Skills.csv' WITH (FORMAT CSV);
+\COPY Skills(skill_name, skill_type) FROM './Skills.csv' WITH (FORMAT CSV);
 SELECT * FROM Skills ORDER BY random() LIMIT 5;
  
 -- AgentRecords

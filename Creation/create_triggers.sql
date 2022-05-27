@@ -239,5 +239,5 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER Creations_profits_payment
 AFTER UPDATE ON Creations
 FOR EACH ROW
-WHEN (NEW.profits != 0)
+WHEN (NEW.profits != 0 AND NEW.profits != OLD.profits)
 EXECUTE PROCEDURE profits_2_payment();

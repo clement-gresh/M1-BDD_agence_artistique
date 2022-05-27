@@ -2,8 +2,6 @@
 
 
 -- SELECT query used to find which creations artists worked on
-DROP FUNCTION payment_received();
-
 CREATE OR REPLACE FUNCTION payment_received() RETURNS INT AS $$
 DECLARE
     pid INT;
@@ -50,41 +48,3 @@ END;
 $$ LANGUAGE plpgsql;
 
 SELECT * FROM payment_received();
-
-/*
-SELECT DISTINCT ON (pc.proposal_id)
-    cont.contact_id, cont.first_name, cont.last_name, creat.creation_id, creat.creation_name,
-        pc.proposal_id, pc.signed_date, pc.incentive, pr.amount, pr.payment_status
-    FROM Contacts AS cont
-    JOIN Involvments AS inv
-        ON cont.contact_id = inv.contact_id
-    JOIN Creations as creat
-        ON inv.creation_id = creat.creation_id
-    JOIN Requests AS req
-        ON req.creation_id = creat.creation_id
-    JOIN Proposals AS prop
-        ON req.request_id = prop.request_id
-    JOIN ProducerContracts AS pc
-        ON pc.proposal_id = prop.proposal_id
-    JOIN PaymentRecords AS pr
-        ON (pr.proposal_id = pc.proposal_id AND pr.signed_date = pc.signed_date)
-    --WHERE cont.contact_id = 264
-    --    AND creat.creation_id = 8052
-    --    AND pr.payment_status = 'avenant'::payments_status_type
-    ORDER BY pc.proposal_id DESC, pc.signed_date DESC
-    LIMIT 10;
-
-
--- Test : trigger profits_2_payment on table Creations
--- must succeed : once the profits are UPDATEd for the creation, a line is added in PaymentRecords for
--- the artist (one who has worked on the creation according to the corresponding proposal)
-SELECT *
-    FROM PaymentRecords
-    WHERE proposal_id = 11037;
-
-UPDATE Creations SET profits = 100 WHERE creation_id = 2395;
-
-SELECT *
-    FROM PaymentRecords
-    WHERE proposal_id = 11037;
-*/

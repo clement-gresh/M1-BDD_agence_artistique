@@ -21,7 +21,10 @@ Pour lancer le projet, se placer dans le dossier /Creation puis utiliser les com
 Pour plus de rapidite, utiliser la commande `\i launcher.sql` qui executera toutes ces actions dans l'ordre.
 
 En cas de probleme de localisation des fichiers .csv lorsque ces commandes sont executees, il peut etre necessaire de changer le chemin y menant
-dans /Creation/insert_data.sql (dans les commandes \COPY)
+dans /Creation/insert_data.sql (dans les commandes \COPY).
+
 
 ### Tests
 Les tests sont disponibles dans le dossier /Creation/Test 
+
+Pour lancer tous les tests, utiliser la commande `\i ./Test/test_launcher.sql` (toujours depuis le dossier /Creation ).

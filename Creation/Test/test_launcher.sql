@@ -1,0 +1,27 @@
+-- Utiliser : \i ./Test/test_launcher.sql
+\i './Test/test_trigger_check_address_if_agent.sql'
+\i './Test/test_trigger_check_request_date.sql'
+\i './Test/test_trigger_generate_payment_insert.sql'
+\i './Test/test_trigger_generate_payment.sql'
+\i './Test/test_trigger_has_current_contract.sql'
+\i './Test/test_trigger_has_skill.sql'
+\i './Test/test_trigger_is_musician.sql'
+\i './Test/test_trigger_profits_null.sql'
+\i './Test/test_trigger_profits_payment.sql'
+\i './Test/test_trigger_skill_job.sql'
+\i './Test/test_trigger_valide_annouce.sql'
+
+/*
+-- Utiliser \i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_launcher.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_check_address_if_agent.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_check_request_date.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_generate_payment_insert.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_generate_payment.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_has_current_contract.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_has_skill.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_is_musician.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_profits_null.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_profits_payment.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_skill_job.sql'
+\i 'C:/Users/Clem/01-coding-projects/08-sql-projects/projet-bdd-2021/Creation/Test/test_trigger_valide_annouce.sql'
+*/

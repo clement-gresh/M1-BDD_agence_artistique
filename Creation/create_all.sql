@@ -40,7 +40,7 @@ CREATE TABLE Contacts
     CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
     CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
 	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$'),
-	UNIQUE(first_name, last_name, birth_date)
+	UNIQUE(first_name, last_name, birth_date, address)
 );
 
 CREATE TABLE Creations(
@@ -156,7 +156,7 @@ CREATE TABLE Agents (
 	CONSTRAINT birth_date_check CHECK (birth_date > '1900-01-01' AND birth_date < NOW()),
 	CONSTRAINT tel_check CHECK (tel ~* '^(\+)?[0-9\)\(]{10,20}$'),
 	CONSTRAINT postal_code_check CHECK (postal_code ~* '^[1-9]{1}[0-9]{1,7}$'),
-	UNIQUE(first_name, last_name, birth_date)
+	UNIQUE(first_name, last_name, birth_date, address)
 );
 
 CREATE TABLE AgencyContracts(
